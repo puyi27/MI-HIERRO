@@ -74,6 +74,7 @@ export const REMATE_META: Record<RemateType, string> = {
 };
 
 const NAME_REGEX = /^[\p{L}][\p{L}\p{M}'\u2019\-.\s]{1,39}$/u;
+const NICKNAME_REGEX = /^[\p{L}][\p{L}\p{M}'\u2019\-.\s]{0,29}$/u;
 const ORIGIN_REGEX = /^[\p{L}][\p{L}\p{M}'\u2019\-.,\s]{1,59}$/u;
 
 const nameField = (label: string) =>
@@ -91,6 +92,18 @@ export const userProfileSchema = z.object({
   lastName1: nameField("El primer apellido"),
   lastName2: z
     .union([nameField("El segundo apellido"), z.literal("")])
+    .optional()
+    .transform((value) => value ?? ""),
+  nickname: z
+    .union([
+      z
+        .string()
+        .trim()
+        .min(2, "El apodo debe tener al menos 2 caracteres")
+        .max(30, "El apodo no puede superar 30 caracteres")
+        .regex(NICKNAME_REGEX, "El apodo solo admite letras, espacios, guiones y apóstrofes"),
+      z.literal(""),
+    ])
     .optional()
     .transform((value) => value ?? ""),
   origin: z

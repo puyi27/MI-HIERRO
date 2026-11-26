@@ -1,7 +1,15 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import { animate, createScope, stagger, utils } from "animejs";
+import { createDrawable } from "animejs/svg";
 import { AlertCircle, Hammer, Loader2 } from "lucide-react";
 import { STYLE_META, STYLE_TYPES, type ForgeProposal, type ForgeStyle } from "@/types/forge";
 import { StyleGlyph } from "@/components/forge/StyleGlyph";
 import { ProposalCard } from "@/components/forge/ProposalCard";
+import { useMediaQuery } from "@/components/ui/useMediaQuery";
+import { prefersReducedMotion } from "@/lib/motion";
 
 interface StepStyleProps {
   style: ForgeStyle;
@@ -26,8 +34,46 @@ export function StepStyle({
   onSelectProposal,
   initialsLabel,
 }: StepStyleProps) {
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const isMobile = useMediaQuery("(max-width: 767px)");
+  const [emblaRef] = useEmblaCarousel({ align: "start", containScroll: "trimSnaps" });
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || prefersReducedMotion()) return;
+    const scope = createScope({ root }).add(() => {
+      const paths = utils.$("[data-style-glyph] path");
+      if (paths.length === 0) return;
+      const drawables = createDrawable(paths);
+      animate(drawables, {
+        draw: ["0 0", "0 1"],
+        duration: 1100,
+        delay: stagger(20),
+        ease: "inOutSine",
+      });
+    });
+    return () => scope.revert();
+  }, []);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || proposals.length === 0 || prefersReducedMotion()) return;
+    const cards = root.querySelectorAll("[data-proposal-card]");
+    if (cards.length === 0) return;
+    const animation = animate(cards, {
+      opacity: [0, 1],
+      translateY: [22, 0],
+      duration: 620,
+      delay: stagger(90),
+      ease: "out(3)",
+    });
+    return () => {
+      animation.revert();
+    };
+  }, [proposals]);
+
   return (
-    <div>
+    <div ref={rootRef}>
       <p className="eyebrow">Paso 03 · Estilo y forja</p>
       <h1 className="mt-4 font-display text-3xl leading-tight text-forge-ivory sm:text-4xl">Elige el temple del hierro</h1>
       <p className="mt-4 max-w-2xl text-sm leading-relaxed text-forge-muted">
@@ -89,17 +135,39 @@ export function StepStyle({
             <h2 className="font-display text-xl tracking-wide text-forge-ivory">Propuestas forjadas</h2>
             <p className="text-[0.62rem] uppercase tracking-[0.22em] text-forge-muted">Selecciona para el visor</p>
           </div>
-          <div className="mt-4 grid gap-4 md:grid-cols-3">
-            {proposals.map((proposal, index) => (
-              <ProposalCard
-                key={proposal.id}
-                proposal={proposal}
-                index={index}
-                selected={selectedProposalId === proposal.id}
-                onSelect={() => onSelectProposal(proposal.id)}
-              />
-            ))}
-          </div>
+
+          {isMobile ? (
+            <div className="mt-4 overflow-hidden" ref={emblaRef} aria-label="Propuestas forjadas">
+              <div className="flex gap-4">
+                {proposals.map((proposal, index) => (
+                  <div key={proposal.id} className="min-w-0 flex-[0_0_86%]">
+                    <ProposalCard
+                      proposal={proposal}
+                      index={index}
+                      selected={selectedProposalId === proposal.id}
+                      onSelect={() => onSelectProposal(proposal.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              {proposals.map((proposal, index) => (
+                <ProposalCard
+                  key={proposal.id}
+                  proposal={proposal}
+                  index={index}
+                  selected={selectedProposalId === proposal.id}
+                  onSelect={() => onSelectProposal(proposal.id)}
+                />
+              ))}
+            </div>
+          )}
+
+          {isMobile ? (
+            <p className="mt-3 text-center text-[0.6rem] uppercase tracking-[0.22em] text-forge-muted">Desliza para ver las tres</p>
+          ) : null}
         </div>
       ) : null}
     </div>

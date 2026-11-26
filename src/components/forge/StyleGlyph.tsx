@@ -14,6 +14,7 @@ export function StyleGlyph({ style, className }: StyleGlyphProps) {
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
     "aria-hidden": true,
+    "data-style-glyph": style,
     className,
   };
 

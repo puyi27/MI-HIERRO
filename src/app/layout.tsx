@@ -1,26 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
+import { Cinzel, Cormorant_Garamond, Inter } from "next/font/google";
+import { ForgeToaster } from "@/components/ui/ForgeToaster";
 import "./globals.css";
 
-const cinzel = localFont({
-  src: "../fonts/Cinzel-Bold.ttf",
-  weight: "700",
+const cinzel = Cinzel({
+  subsets: ["latin"],
+  weight: ["700"],
   variable: "--font-cinzel",
   display: "swap",
 });
 
-const cormorant = localFont({
-  src: "../fonts/CormorantGaramond-Bold.ttf",
-  weight: "700",
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
   variable: "--font-cormorant",
   display: "swap",
 });
 
-const inter = localFont({
-  src: [
-    { path: "../fonts/Inter-Regular.ttf", weight: "400", style: "normal" },
-    { path: "../fonts/Inter-SemiBold.ttf", weight: "600", style: "normal" },
-  ],
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-inter",
   display: "swap",
 });
@@ -71,7 +71,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${cinzel.variable} ${cormorant.variable} ${inter.variable}`}>
-      <body className="min-h-screen bg-forge-void text-forge-ivory">{children}</body>
+      <body className="min-h-screen bg-forge-void text-forge-ivory">
+        {children}
+        <ForgeToaster />
+      </body>
     </html>
   );
 }

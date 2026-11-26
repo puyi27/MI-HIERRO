@@ -91,6 +91,20 @@ export function StepProfile({ draft, errors, onChange }: StepProfileProps) {
           optionalLabel="opcional"
           maxLength={40}
         />
+        {draft.profile === "novillero" ? (
+          <Field
+            id="nickname"
+            label="Apodo"
+            value={draft.nickname}
+            onChange={(nickname) => onChange({ nickname })}
+            placeholder="El Sella"
+            autoComplete="nickname"
+            error={errors.nickname}
+            hint="El nombre por el que te conocen en el patio de cuadrillas."
+            optionalLabel="opcional"
+            maxLength={30}
+          />
+        ) : null}
         <Field
           id="origin"
           label="Procedencia"

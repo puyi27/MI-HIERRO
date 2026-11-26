@@ -50,6 +50,7 @@ model Design {
   firstName    String
   lastName1    String
   lastName2    String?
+  nickname     String?
   origin       String?
   character    String
   remate       String

@@ -8,12 +8,24 @@ import type {
 
 export type ForgeTexture = "hierro" | "bordado" | "cuero";
 
+export interface CheckoutFeedback {
+  kind: "success" | "error";
+  message: string;
+  downloadUrl?: string;
+}
+
+export interface LeadFeedback {
+  kind: "success" | "error";
+  message: string;
+}
+
 export interface WizardDraft {
   step: number;
   profile: ProfileType;
   firstName: string;
   lastName1: string;
   lastName2: string;
+  nickname: string;
   origin: string;
   character: CharacterType;
   remate: RemateType;
@@ -31,6 +43,7 @@ export function createDraft(profile: ProfileType): WizardDraft {
     firstName: "",
     lastName1: "",
     lastName2: "",
+    nickname: "",
     origin: "",
     character: "sobrio",
     remate: "sin-remate",

@@ -3,6 +3,7 @@ import type { BrandBlueprint, DesignScores, ProfileType } from "@/types/forge";
 export type ProductKey = "premium" | "similarity";
 export type OrderStatusKey = "pending" | "paid" | "failed" | "refunded";
 export type LeadTypeKey = "revision" | "forja";
+export type ReportStatusKey = "pending" | "in_progress" | "delivered";
 
 export interface DesignRecord {
   id: string;
@@ -10,6 +11,7 @@ export interface DesignRecord {
   firstName: string;
   lastName1: string;
   lastName2: string;
+  nickname: string;
   origin: string;
   character: string;
   remate: string;
@@ -28,6 +30,7 @@ export interface CreateDesignInput {
   firstName: string;
   lastName1: string;
   lastName2: string;
+  nickname: string;
   origin: string;
   character: string;
   remate: string;
@@ -119,4 +122,8 @@ export interface ForgeStore {
   }): Promise<SimilarityRequestRecord>;
   getSimilarityByOrder(orderId: string): Promise<SimilarityRequestRecord | null>;
   createLead(input: CreateLeadInput): Promise<LeadRecord>;
+  listOrders(limit?: number): Promise<OrderRecord[]>;
+  listLeads(limit?: number): Promise<LeadRecord[]>;
+  listSimilarityRequests(limit?: number): Promise<SimilarityRequestRecord[]>;
+  updateSimilarityStatus(id: string, status: ReportStatusKey): Promise<SimilarityRequestRecord | null>;
 }

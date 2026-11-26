@@ -48,6 +48,7 @@ async function createDesign() {
     firstName: "Joaquín",
     lastName1: "García",
     lastName2: "Moreno",
+    nickname: "",
     origin: "Salamanca",
     character: "senorial",
     remate: "corona",

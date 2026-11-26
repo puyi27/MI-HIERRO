@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import type { ForgeTexture } from "@/components/forge/types";
 
 interface PreviewCanvasProps {
@@ -10,6 +11,12 @@ interface PreviewCanvasProps {
 }
 
 const SIZE = 900;
+
+interface LightState {
+  x: number;
+  y: number;
+  active: boolean;
+}
 
 function seededRandom(seed: number): () => number {
   let value = seed;
@@ -22,7 +29,7 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-function drawTexture(context: CanvasRenderingContext2D, texture: ForgeTexture): void {
+function drawBase(context: CanvasRenderingContext2D, texture: ForgeTexture): void {
   context.clearRect(0, 0, SIZE, SIZE);
 
   if (texture === "hierro") {
@@ -103,8 +110,121 @@ function drawTexture(context: CanvasRenderingContext2D, texture: ForgeTexture): 
   }
 }
 
+function drawSpecular(context: CanvasRenderingContext2D, offset: number, size: number, light: LightState): void {
+  context.save();
+  context.beginPath();
+  context.rect(offset, offset, size, size);
+  context.clip();
+  context.globalCompositeOperation = "screen";
+
+  const centerX = offset + light.x * size;
+  const centerY = offset + light.y * size;
+  const gradient = context.createRadialGradient(centerX, centerY, size * 0.01, centerX, centerY, size * (light.active ? 0.66 : 0.82));
+  gradient.addColorStop(0, light.active ? "rgba(242, 233, 218, 0.26)" : "rgba(242, 233, 218, 0.09)");
+  gradient.addColorStop(0.26, "rgba(200, 155, 99, 0.14)");
+  gradient.addColorStop(0.62, "rgba(200, 155, 99, 0.035)");
+  gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+  context.fillStyle = gradient;
+  context.fillRect(offset, offset, size, size);
+
+  const shift = (light.x - 0.5) * 0.4;
+  const sheen = context.createLinearGradient(offset, offset, offset + size, offset + size);
+  sheen.addColorStop(Math.max(0, 0.3 + shift), "rgba(242, 233, 218, 0)");
+  sheen.addColorStop(Math.max(0, 0.42 + shift), "rgba(242, 233, 218, 0.08)");
+  sheen.addColorStop(Math.min(1, 0.54 + shift), "rgba(242, 233, 218, 0)");
+  context.fillStyle = sheen;
+  context.fillRect(offset, offset, size, size);
+
+  const hammer = context.createLinearGradient(offset, offset + size, offset + size, offset);
+  hammer.addColorStop(0, "rgba(0, 0, 0, 0.16)");
+  hammer.addColorStop(0.5, "rgba(0, 0, 0, 0)");
+  hammer.addColorStop(1, "rgba(242, 233, 218, 0.05)");
+  context.globalCompositeOperation = "overlay";
+  context.fillStyle = hammer;
+  context.fillRect(offset, offset, size, size);
+  context.restore();
+}
+
+function drawStitchRelief(context: CanvasRenderingContext2D, offset: number, size: number, light: LightState): void {
+  context.save();
+  context.beginPath();
+  context.rect(offset, offset, size, size);
+  context.clip();
+  context.globalCompositeOperation = "soft-light";
+
+  const step = 11;
+  for (let position = 0; position < size; position += step) {
+    const distance = Math.abs(position / size - light.y);
+    const alpha = Math.max(0.02, 0.17 - distance * 0.13);
+    context.strokeStyle = `rgba(242, 233, 218, ${alpha.toFixed(3)})`;
+    context.lineWidth = 1.4;
+    context.beginPath();
+    context.moveTo(offset + position, offset);
+    context.lineTo(offset + position, offset + size);
+    context.stroke();
+  }
+
+  context.globalCompositeOperation = "overlay";
+  const centerX = offset + light.x * size;
+  const centerY = offset + light.y * size;
+  const glow = context.createRadialGradient(centerX, centerY, size * 0.02, centerX, centerY, size * 0.62);
+  glow.addColorStop(0, "rgba(200, 155, 99, 0.2)");
+  glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+  context.fillStyle = glow;
+  context.fillRect(offset, offset, size, size);
+
+  context.globalCompositeOperation = "source-over";
+  context.setLineDash([5, 7]);
+  context.strokeStyle = "rgba(242, 233, 218, 0.22)";
+  context.lineWidth = 1;
+  context.strokeRect(offset + 8, offset + 8, size - 16, size - 16);
+  context.setLineDash([]);
+  context.restore();
+}
+
+function drawBurnShading(context: CanvasRenderingContext2D, offset: number, size: number, light: LightState): void {
+  context.save();
+  context.beginPath();
+  context.rect(offset, offset, size, size);
+  context.clip();
+
+  const centerX = offset + size * 0.5;
+  const centerY = offset + size * 0.5;
+  const vignette = context.createRadialGradient(centerX, centerY, size * 0.26, centerX, centerY, size * 0.74);
+  vignette.addColorStop(0, "rgba(0, 0, 0, 0)");
+  vignette.addColorStop(0.7, "rgba(10, 5, 2, 0.28)");
+  vignette.addColorStop(1, "rgba(4, 2, 1, 0.72)");
+  context.globalCompositeOperation = "multiply";
+  context.fillStyle = vignette;
+  context.fillRect(offset, offset, size, size);
+
+  const rimX = offset + size * (1 - light.x);
+  const rimY = offset + size * (1 - light.y);
+  const rim = context.createRadialGradient(rimX, rimY, size * 0.01, rimX, rimY, size * 0.72);
+  rim.addColorStop(0, "rgba(200, 120, 60, 0.22)");
+  rim.addColorStop(1, "rgba(0, 0, 0, 0)");
+  context.globalCompositeOperation = "screen";
+  context.fillStyle = rim;
+  context.fillRect(offset, offset, size, size);
+
+  const random = seededRandom(31);
+  context.globalCompositeOperation = "overlay";
+  context.strokeStyle = "rgba(200, 155, 99, 0.07)";
+  for (let index = 0; index < 30; index += 1) {
+    const y = offset + random() * size;
+    context.lineWidth = random() * 1.2 + 0.4;
+    context.beginPath();
+    context.moveTo(offset, y);
+    context.bezierCurveTo(offset + size * 0.3, y - 9, offset + size * 0.7, y + 10, offset + size, y - 3);
+    context.stroke();
+  }
+  context.restore();
+}
+
 export function PreviewCanvas({ previewUrl, texture, alt }: PreviewCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const scheduleRef = useRef<() => void>(() => {});
+  const lightRef = useRef<LightState>({ x: 0.5, y: 0.38, active: false });
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -113,29 +233,34 @@ export function PreviewCanvas({ previewUrl, texture, alt }: PreviewCanvasProps) 
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    drawTexture(context, texture);
-
     const image = new Image();
     image.decoding = "async";
-    image.src = previewUrl;
+    let disposed = false;
+    let frame: number | null = null;
 
-    const render = () => {
+    const paint = () => {
+      frame = null;
+      if (disposed) return;
+      const light = lightRef.current;
+      drawBase(context, texture);
+      if (!image.complete || image.naturalWidth === 0) return;
+
       const size = SIZE * (texture === "bordado" ? 0.56 : 0.62);
       const offset = (SIZE - size) / 2;
 
       context.save();
-      if (texture === "hierro") {
-        context.shadowColor = "rgba(0, 0, 0, 0.85)";
-        context.shadowBlur = 34;
-        context.shadowOffsetY = 12;
-        context.drawImage(image, offset, offset, size, size);
-      } else if (texture === "bordado") {
+      if (texture === "bordado") {
         context.shadowColor = "rgba(0, 0, 0, 0.7)";
         context.shadowBlur = 18;
         context.drawImage(image, offset, offset, size, size);
         context.globalCompositeOperation = "multiply";
         context.fillStyle = "rgba(16, 24, 32, 0.28)";
         context.fillRect(offset, offset, size, size);
+      } else if (texture === "hierro") {
+        context.shadowColor = "rgba(0, 0, 0, 0.85)";
+        context.shadowBlur = 34;
+        context.shadowOffsetY = 12;
+        context.drawImage(image, offset, offset, size, size);
       } else {
         context.shadowColor = "rgba(0, 0, 0, 0.9)";
         context.shadowBlur = 26;
@@ -148,20 +273,55 @@ export function PreviewCanvas({ previewUrl, texture, alt }: PreviewCanvasProps) 
       }
       context.restore();
 
+      if (texture === "hierro") drawSpecular(context, offset, size, light);
+      else if (texture === "bordado") drawStitchRelief(context, offset, size, light);
+      else drawBurnShading(context, offset, size, light);
+
       context.strokeStyle = "rgba(200, 155, 99, 0.4)";
       context.lineWidth = 1.4;
       context.strokeRect(offset - 14, offset - 14, size + 28, size + 28);
     };
 
+    const schedule = () => {
+      if (frame === null) frame = requestAnimationFrame(paint);
+    };
+    scheduleRef.current = schedule;
+
+    const handleLoad = () => {
+      setFailed(false);
+      schedule();
+    };
     const handleError = () => setFailed(true);
-    image.addEventListener("load", render);
+
+    image.addEventListener("load", handleLoad);
     image.addEventListener("error", handleError);
+    image.src = previewUrl;
+    schedule();
 
     return () => {
-      image.removeEventListener("load", render);
+      disposed = true;
+      if (frame !== null) cancelAnimationFrame(frame);
+      image.removeEventListener("load", handleLoad);
       image.removeEventListener("error", handleError);
+      scheduleRef.current = () => {};
     };
   }, [previewUrl, texture]);
+
+  const handlePointerMove = useCallback((event: ReactPointerEvent<HTMLCanvasElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+    lightRef.current = {
+      x: Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width)),
+      y: Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height)),
+      active: true,
+    };
+    scheduleRef.current();
+  }, []);
+
+  const handlePointerLeave = useCallback(() => {
+    lightRef.current = { x: 0.5, y: 0.38, active: false };
+    scheduleRef.current();
+  }, []);
 
   return (
     <div className="relative">
@@ -171,6 +331,9 @@ export function PreviewCanvas({ previewUrl, texture, alt }: PreviewCanvasProps) 
         height={SIZE}
         role="img"
         aria-label={alt}
+        onPointerMove={handlePointerMove}
+        onPointerDown={handlePointerMove}
+        onPointerLeave={handlePointerLeave}
         className="forge-canvas"
       />
       {failed ? (

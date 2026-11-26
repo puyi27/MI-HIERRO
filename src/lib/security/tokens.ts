@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { downloadTokenPayloadSchema, type DownloadTokenPayload } from "@/types/forge";
+import { isServerlessRuntime } from "@/lib/runtime";
 
 const DEV_SECRET = "mi-hierro-local-development-secret-do-not-use-in-production";
 const DEFAULT_TTL_SECONDS = 60 * 60 * 72;
@@ -43,6 +44,11 @@ function productionFallbackSecret(): string {
 export function tokenSecret(): string {
   const configured = process.env.DOWNLOAD_TOKEN_SECRET;
   if (configured && configured.length >= 16) return configured;
+  if (isServerlessRuntime()) {
+    throw new Error(
+      "DOWNLOAD_TOKEN_SECRET es obligatorio en Vercel: define un secreto de al menos 16 caracteres. No hay almacén local persistente.",
+    );
+  }
   if (process.env.NODE_ENV === "production") return productionFallbackSecret();
   return DEV_SECRET;
 }

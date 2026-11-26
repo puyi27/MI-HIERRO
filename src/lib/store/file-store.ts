@@ -68,6 +68,7 @@ export const fileStore: ForgeStore = {
         firstName: input.firstName,
         lastName1: input.lastName1,
         lastName2: input.lastName2,
+        nickname: input.nickname,
         origin: input.origin,
         character: input.character,
         remate: input.remate,
@@ -193,6 +194,36 @@ export const fileStore: ForgeStore = {
       };
       database.leads.push(record);
       return record;
+    });
+  },
+
+  async listOrders(limit = 60) {
+    const database = await readDatabase();
+    return [...database.orders]
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+      .slice(0, limit);
+  },
+
+  async listLeads(limit = 60) {
+    const database = await readDatabase();
+    return [...database.leads]
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+      .slice(0, limit);
+  },
+
+  async listSimilarityRequests(limit = 60) {
+    const database = await readDatabase();
+    return [...database.reports]
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+      .slice(0, limit);
+  },
+
+  async updateSimilarityStatus(id, status) {
+    return mutate((database) => {
+      const report = database.reports.find((item) => item.id === id);
+      if (!report) return null;
+      report.status = status;
+      return report;
     });
   },
 };

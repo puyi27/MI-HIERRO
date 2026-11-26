@@ -22,7 +22,8 @@ export function StepInitials({ draft, combinations, selected, onSelect }: StepIn
       <p className="mt-4 max-w-2xl text-sm leading-relaxed text-forge-muted">
         Hemos normalizado tu nombre y apellidos, eliminando acentos y duplicados. Elige la combinación que quieres forjar:
         {""}
-        <span className="text-forge-ivory"> {draft.firstName} {draft.lastName1}{draft.lastName2 ? ` ${draft.lastName2}` : ""}</span>.
+        <span className="text-forge-ivory"> {draft.firstName} {draft.lastName1}{draft.lastName2 ? ` ${draft.lastName2}` : ""}</span>
+        {draft.nickname ? <span className="text-forge-bronze"> · «{draft.nickname}»</span> : null}.
       </p>
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

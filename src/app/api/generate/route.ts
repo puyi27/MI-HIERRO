@@ -53,6 +53,7 @@ export async function POST(request: Request) {
         firstName: input.profile.firstName,
         lastName1: input.profile.lastName1,
         lastName2: input.profile.lastName2,
+        nickname: input.profile.nickname,
         origin: input.profile.origin,
         character: input.profile.character,
         remate: input.profile.remate,

@@ -197,6 +197,29 @@ body {
   display: block;
   background: #0a0908;
   border: 1px solid var(--color-forge-line);
+  touch-action: pan-y;
+  cursor: crosshair;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.forge-toast {
+  border-left: 2px solid var(--color-forge-bronze) !important;
+}
+
+.forge-toast-error {
+  border-left-color: #b4563c !important;
 }
 
 @keyframes forge-pulse {

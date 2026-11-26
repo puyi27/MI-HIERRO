@@ -1,35 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ArrowUpRight,
-  BadgeCheck,
-  Check,
-  CreditCard,
-  Download,
-  FileText,
-  Hammer,
-  Loader2,
-  Mail,
-  Shield,
-} from "lucide-react";
+import { ArrowUpRight, Check, CreditCard, Download, FileText, Hammer, Loader2, Shield } from "lucide-react";
 import { LegalNotice } from "@/components/layout/LegalNotice";
 import { Field } from "@/components/ui/Field";
-import { Chip } from "@/components/ui/Chip";
-import type { ForgeProposal } from "@/types/forge";
-import type { LeadRequest } from "@/types/forge";
-import type { WizardDraft } from "@/components/forge/types";
-
-export interface CheckoutFeedback {
-  kind: "success" | "error";
-  message: string;
-  downloadUrl?: string;
-}
-
-interface LeadFeedback {
-  kind: "success" | "error";
-  message: string;
-}
+import type { ForgeProposal, LeadRequest } from "@/types/forge";
+import type { CheckoutFeedback, LeadFeedback, WizardDraft } from "@/components/forge/types";
+import { LeadDrawer } from "@/components/forge/LeadDrawer";
 
 interface StepDeliveryProps {
   draft: WizardDraft;
@@ -78,28 +55,12 @@ export function StepDelivery({
   leadBusy,
   leadFeedback,
 }: StepDeliveryProps) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [leadType, setLeadType] = useState<"revision" | "forja">("revision");
-  const [leadName, setLeadName] = useState(`${draft.firstName} ${draft.lastName1}`.trim());
-  const [leadEmail, setLeadEmail] = useState(email);
-  const [leadPhone, setLeadPhone] = useState("");
-  const [leadMessage, setLeadMessage] = useState("");
-  const [leadError, setLeadError] = useState<string | null>(null);
 
-  const submitLead = () => {
-    if (leadMessage.trim().length < 10) {
-      setLeadError("Cuéntanos un poco más (mínimo 10 caracteres).");
-      return;
-    }
-    setLeadError(null);
-    onLead({
-      type: leadType,
-      name: leadName,
-      email: leadEmail,
-      phone: leadPhone,
-      message: leadMessage,
-      budget: leadType === "revision" ? "49-99" : "forja",
-      designId: proposal?.id,
-    });
+  const openDrawer = (type: "revision" | "forja") => {
+    setLeadType(type);
+    setDrawerOpen(true);
   };
 
   return (
@@ -124,9 +85,17 @@ export function StepDelivery({
             Tarjeta vertical 1080x1920 con tu hierro, tu nombre y la firma MI HIERRO. Pensada para Instagram y TikTok.
           </p>
           <ul className="mt-4 space-y-2 text-xs text-forge-muted">
-            <li className="flex gap-2"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-bronze" aria-hidden />Story 9:16 y avatar 1:1 con firma MI HIERRO</li>
-            <li className="flex gap-2"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-bronze" aria-hidden />Marca de agua orientativa en ambas piezas</li>
-            <li className="flex gap-2"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-bronze" aria-hidden />Sin registro ni tarjeta</li>
+            <li className="flex gap-2">
+              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-bronze" aria-hidden />Story 9:16 y avatar 1:1 con
+              firma MI HIERRO
+            </li>
+            <li className="flex gap-2">
+              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-bronze" aria-hidden />Marca de agua orientativa en
+              ambas piezas
+            </li>
+            <li className="flex gap-2">
+              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-bronze" aria-hidden />Sin registro ni tarjeta
+            </li>
           </ul>
           <button type="button" onClick={onStory} disabled={storyBusy || avatarBusy || !proposal} className="btn-ghost mt-5 w-full">
             {storyBusy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Download className="h-4 w-4" aria-hidden />}
@@ -219,7 +188,10 @@ export function StepDelivery({
             >
               <p>{checkoutFeedback.message}</p>
               {checkoutFeedback.downloadUrl ? (
-                <a href={checkoutFeedback.downloadUrl} className="mt-3 inline-flex items-center gap-2 font-semibold uppercase tracking-[0.16em] text-forge-bronze">
+                <a
+                  href={checkoutFeedback.downloadUrl}
+                  className="mt-3 inline-flex items-center gap-2 font-semibold uppercase tracking-[0.16em] text-forge-bronze"
+                >
                   Abrir mi entrega
                   <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
                 </a>
@@ -242,51 +214,32 @@ export function StepDelivery({
           valora similitudes y viabilidad antes de fabricar.
         </p>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Chip label="Revisión 49–99 €" selected={leadType === "revision"} onSelect={() => setLeadType("revision")} />
-          <Chip label="Forja física" selected={leadType === "forja"} onSelect={() => setLeadType("forja")} />
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <button type="button" onClick={() => openDrawer("revision")} className="btn-ghost w-full">
+            <FileText className="h-4 w-4" aria-hidden />
+            Pedir revisión
+          </button>
+          <button type="button" onClick={() => openDrawer("forja")} className="btn-ghost w-full">
+            <Hammer className="h-4 w-4" aria-hidden />
+            Encargar forja física
+          </button>
         </div>
-
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <Field id="leadName" label="Nombre" value={leadName} onChange={setLeadName} autoComplete="name" required />
-          <Field id="leadEmail" label="Email" value={leadEmail} onChange={setLeadEmail} type="email" inputMode="email" autoComplete="email" required />
-          <Field id="leadPhone" label="Teléfono" value={leadPhone} onChange={setLeadPhone} type="tel" inputMode="tel" autoComplete="tel" optionalLabel="opcional" />
-          <div className="sm:col-span-2">
-            <label htmlFor="leadMessage" className="mb-2 block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-forge-muted">
-              Cuéntanos qué necesitas <span className="text-forge-bronze">*</span>
-            </label>
-            <textarea
-              id="leadMessage"
-              value={leadMessage}
-              onChange={(event) => setLeadMessage(event.target.value)}
-              rows={4}
-              maxLength={1200}
-              className="field resize-y"
-              placeholder="Quiero revisar si este hierro se parece a alguno existente y pedir presupuesto de forja."
-            />
-            {leadError ? (
-              <p role="alert" className="mt-2 text-xs text-[#d98b70]">{leadError}</p>
-            ) : null}
-          </div>
-        </div>
-
-        <button type="button" onClick={submitLead} disabled={leadBusy} className="btn-ghost mt-4">
-          {leadBusy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Mail className="h-4 w-4" aria-hidden />}
-          {leadBusy ? "Enviando" : "Enviar solicitud"}
-        </button>
-
-        {leadFeedback ? (
-          <p
-            role="status"
-            className={`mt-4 flex items-start gap-2 text-xs leading-relaxed ${
-              leadFeedback.kind === "success" ? "text-forge-bronze" : "text-[#d98b70]"
-            }`}
-          >
-            <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-            {leadFeedback.message}
-          </p>
-        ) : null}
+        <p className="mt-3 text-[0.62rem] leading-relaxed text-forge-muted/80">
+          Se abre un cajón deslizable con el formulario. Adjuntamos automáticamente tu diseño al expediente.
+        </p>
       </div>
+
+      <LeadDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        type={leadType}
+        onTypeChange={setLeadType}
+        defaultName={`${draft.firstName} ${draft.lastName1}`.trim()}
+        defaultEmail={email}
+        onSubmit={onLead}
+        busy={leadBusy}
+        feedback={leadFeedback}
+      />
 
       <LegalNotice variant="full" className="mt-6" />
 

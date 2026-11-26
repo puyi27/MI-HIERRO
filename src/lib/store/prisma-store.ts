@@ -25,6 +25,7 @@ function designRecord(design: {
   firstName: string;
   lastName1: string;
   lastName2: string | null;
+  nickname: string | null;
   origin: string | null;
   character: string;
   remate: string;
@@ -43,6 +44,7 @@ function designRecord(design: {
     firstName: design.firstName,
     lastName1: design.lastName1,
     lastName2: design.lastName2 ?? "",
+    nickname: design.nickname ?? "",
     origin: design.origin ?? "",
     character: design.character,
     remate: design.remate,
@@ -97,6 +99,7 @@ export const prismaStore: ForgeStore = {
         firstName: input.firstName,
         lastName1: input.lastName1,
         lastName2: input.lastName2 || null,
+        nickname: input.nickname || null,
         origin: input.origin || null,
         character: input.character,
         remate: input.remate,
@@ -228,6 +231,62 @@ export const prismaStore: ForgeStore = {
       designId: created.designId,
       status: created.status,
       createdAt: created.createdAt.toISOString(),
+    };
+  },
+
+  async listOrders(limit = 60) {
+    const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: limit });
+    return orders.map(orderRecord);
+  },
+
+  async listLeads(limit = 60): Promise<LeadRecord[]> {
+    const leads = await prisma.forgeLead.findMany({ orderBy: { createdAt: "desc" }, take: limit });
+    return leads.map((lead) => ({
+      id: lead.id,
+      type: lead.type,
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone ?? "",
+      message: lead.message,
+      budget: lead.budget,
+      designId: lead.designId,
+      status: lead.status,
+      createdAt: lead.createdAt.toISOString(),
+    }));
+  },
+
+  async listSimilarityRequests(limit = 60): Promise<SimilarityRequestRecord[]> {
+    const reports = await prisma.similarityReportRequest.findMany({
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
+    return reports.map((report) => ({
+      id: report.id,
+      designId: report.designId,
+      orderId: report.orderId,
+      email: report.email,
+      name: report.name,
+      status: report.status,
+      stripeSessionId: report.stripeSessionId,
+      notes: report.notes,
+      createdAt: report.createdAt.toISOString(),
+    }));
+  },
+
+  async updateSimilarityStatus(id, status) {
+    const existing = await prisma.similarityReportRequest.findUnique({ where: { id } });
+    if (!existing) return null;
+    const updated = await prisma.similarityReportRequest.update({ where: { id }, data: { status } });
+    return {
+      id: updated.id,
+      designId: updated.designId,
+      orderId: updated.orderId,
+      email: updated.email,
+      name: updated.name,
+      status: updated.status,
+      stripeSessionId: updated.stripeSessionId,
+      notes: updated.notes,
+      createdAt: updated.createdAt.toISOString(),
     };
   },
 };

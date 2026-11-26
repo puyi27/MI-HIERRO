@@ -14,7 +14,7 @@ const cache = new Map<FontFamilyKey, Font>();
 export function loadFont(family: FontFamilyKey): Font {
   const cached = cache.get(family);
   if (cached) return cached;
-  const fontPath = path.join(process.cwd(), "public", "fonts", FONT_FILES[family]);
+  const fontPath = path.join(process.cwd(), "src", "fonts", FONT_FILES[family]);
   const buffer = fs.readFileSync(fontPath);
   const font = parseFont(buffer as unknown as ArrayBuffer);
   cache.set(family, font);

@@ -16,6 +16,7 @@ export function ProposalCard({ proposal, selected, onSelect, index }: ProposalCa
       onClick={onSelect}
       aria-pressed={selected}
       data-selected={selected}
+      data-proposal-card=""
       className="card-select grain relative overflow-hidden"
     >
       <div className="relative border-b border-forge-line bg-forge-void">
