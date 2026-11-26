@@ -9,6 +9,46 @@ export const LAYOUTS = ["interlocked", "stacked", "shield", "arc"] as const;
 export const FRAMES = ["none", "circle", "arch", "double-bar"] as const;
 export const ORNAMENTS = ["none", "cross", "crown", "arch", "shield", "star"] as const;
 
+export const ARCHITECTURES = [
+  "shared_stem",
+  "mirrored_crest",
+  "nested_cavity",
+  "interlock_knockout",
+  "integrated_arch",
+  "cauldron_handle",
+] as const;
+
+export const GLYPH_SOURCES = ["skeleton", "opentype", "hybrid"] as const;
+
+export const TERMINAL_STYLES = [
+  "forged_spur",
+  "flared_serif",
+  "chisel_bevel",
+  "teardrop",
+  "clean_bar",
+] as const;
+
+export const ORNAMENT_V2_TYPES = [
+  "none",
+  "corona_abierta",
+  "cruz_forja",
+  "asa_caldera",
+  "arco_portico",
+  "bocado_pre",
+  "herradura_limpia",
+  "horquilla",
+  "doble_barra",
+] as const;
+
+export const ANCHOR_POINTS = [
+  "topApex",
+  "leftStem",
+  "rightStem",
+  "innerCavity",
+  "baseFoot",
+  "center",
+] as const;
+
 export type ProfileType = (typeof PROFILE_TYPES)[number];
 export type ForgeStyle = (typeof STYLE_TYPES)[number];
 export type CharacterType = (typeof CHARACTER_TYPES)[number];
@@ -17,6 +57,11 @@ export type FontFamilyKey = (typeof FONT_FAMILIES)[number];
 export type LayoutKey = (typeof LAYOUTS)[number];
 export type FrameKey = (typeof FRAMES)[number];
 export type OrnamentKey = (typeof ORNAMENTS)[number];
+export type ArchitectureKey = (typeof ARCHITECTURES)[number];
+export type GlyphSourceKey = (typeof GLYPH_SOURCES)[number];
+export type TerminalStyleKey = (typeof TERMINAL_STYLES)[number];
+export type OrnamentV2Key = (typeof ORNAMENT_V2_TYPES)[number];
+export type AnchorPointKey = (typeof ANCHOR_POINTS)[number];
 
 export const PROFILE_META: Record<ProfileType, { label: string; short: string; description: string }> = {
   novillero: {
@@ -143,6 +188,14 @@ export const scoreSchema = z.object({
 
 export type DesignScores = z.infer<typeof scoreSchema>;
 
+export const ornamentV2Schema = z.object({
+  type: z.enum(ORNAMENT_V2_TYPES),
+  anchor: z.enum(ANCHOR_POINTS),
+  welded: z.boolean().default(true),
+});
+
+export type OrnamentV2Config = z.infer<typeof ornamentV2Schema>;
+
 export const brandBlueprintSchema = z.object({
   combo: z.string().min(1).max(6),
   style: z.enum(STYLE_TYPES),
@@ -153,9 +206,23 @@ export const brandBlueprintSchema = z.object({
   strokeWidth: z.number().min(6).max(16),
   rotationDeg: z.number().min(-10).max(10),
   lore: z.string().min(10).max(280),
+  architecture: z.enum(ARCHITECTURES).optional(),
+  glyphSource: z.enum(GLYPH_SOURCES).optional(),
+  terminalStyle: z.enum(TERMINAL_STYLES).optional(),
+  ornamentConfig: ornamentV2Schema.optional(),
+  breathingGaps: z.boolean().optional(),
+});
+
+export const brandBlueprintV2Schema = brandBlueprintSchema.extend({
+  architecture: z.enum(ARCHITECTURES),
+  glyphSource: z.enum(GLYPH_SOURCES).default("skeleton"),
+  terminalStyle: z.enum(TERMINAL_STYLES),
+  ornamentConfig: ornamentV2Schema,
+  breathingGaps: z.boolean().default(true),
 });
 
 export type BrandBlueprint = z.infer<typeof brandBlueprintSchema>;
+export type BrandBlueprintV2 = z.infer<typeof brandBlueprintV2Schema>;
 
 export const proposalSchema = z
   .object({

@@ -2,7 +2,17 @@ import paper from "paper";
 import type { BrandBlueprint, DesignScores, FontFamilyKey, InitialsCombination } from "@/types/forge";
 import { loadFont } from "@/lib/forge-engine/fonts";
 import { letterTrackingForStyle } from "@/lib/forge-engine/text-path";
-import { archMaskD, circleD, crownShape, crossShape, shieldD, starShape } from "@/lib/forge-engine/ornaments";
+import {
+  archMaskD,
+  buildOrnamentPletina,
+  circleD,
+  crownShape,
+  crossShape,
+  shieldD,
+  starShape,
+} from "@/lib/forge-engine/ornaments";
+import { composeArchitecture } from "@/lib/forge-engine/architectures";
+import { postProcessForge } from "@/lib/forge-engine/postprocess";
 import {
   centerAndOptimizePath,
   combineQuality,
@@ -27,6 +37,7 @@ export interface ForgeGeometry {
   ornament: ForgeBox | null;
   contours: number;
   frameContours: number;
+  inkDensity?: number;
 }
 
 export interface CompiledForge {
@@ -190,6 +201,7 @@ function computeScores(
   letters: number,
   framed: boolean,
   quality: ForgeQuality | null,
+  inkDensity?: number,
 ): DesignScores {
   const legibilityBase: Record<string, number> = {
     tradicional: 93,
@@ -209,8 +221,9 @@ function computeScores(
     (letters <= 2 ? 3 : 0) -
     (blueprint.ornament === "crown" ? 1 : 0);
   const balance = (balanceBase[blueprint.style] ?? 92) + (framed ? 2 : 0);
+  const densityBonus = inkDensity !== undefined && inkDensity >= 0.14 && inkDensity <= 0.34 ? 4 : 0;
   const forgeabilityBase =
-    86 + (letters <= 2 ? 6 : 0) - (blueprint.ornament === "crown" ? 3 : 0) + (framed ? 4 : 0);
+    86 + (letters <= 2 ? 4 : 0) - (blueprint.ornament === "crown" ? 2 : 0) + (framed ? 3 : 0) + densityBonus;
   const forgeability = forgeabilityBase - qualityPenalty(quality);
 
   return {
@@ -220,9 +233,113 @@ function computeScores(
   };
 }
 
+function compileV2(scope: paper.PaperScope, blueprint: BrandBlueprint, combination: InitialsCombination): CompiledForge {
+  const letters = combination.letters.length > 0 ? combination.letters : [combination.primary];
+  const architecture = blueprint.architecture!;
+  const terminalStyle = blueprint.terminalStyle ?? "forged_spur";
+  const strokeWidth = Math.max(6, Math.min(16, blueprint.strokeWidth));
+  const breathingGaps = blueprint.breathingGaps ?? true;
+
+  const composed = composeArchitecture(scope, architecture, letters, strokeWidth, terminalStyle);
+  let masterItem = composed.item;
+  const glyphBox = boxOf(masterItem);
+  const qualities: ForgeQuality[] = [];
+
+  let frame: paper.PathItem | null = null;
+  if (blueprint.frame === "circle") {
+    const r = Math.max(masterItem.bounds.width, masterItem.bounds.height) * 0.62;
+    const ring = hollowRing(scope, masterItem.bounds.center.x, masterItem.bounds.center.y, r);
+    frame = ring.item;
+    qualities.push(ring.quality);
+    const united = masterItem.unite(frame, { insert: false });
+    masterItem.remove();
+    masterItem = united;
+  } else if (blueprint.style === "heraldico" || blueprint.ornament === "shield") {
+    const w = Math.max(masterItem.bounds.width + 44, 130);
+    const h = Math.max(masterItem.bounds.height + 50, 140);
+    const top = masterItem.bounds.center.y - h / 2;
+    const shield = hollowShield(scope, masterItem.bounds.center.x, top, w, h);
+    frame = shield.item;
+    qualities.push(shield.quality);
+    const united = masterItem.unite(frame, { insert: false });
+    masterItem.remove();
+    masterItem = united;
+  }
+
+  let ornamentItem: paper.PathItem | null = null;
+  const ornCfg = blueprint.ornamentConfig;
+  if (ornCfg && ornCfg.type !== "none") {
+    ornamentItem = buildOrnamentPletina(
+      scope,
+      ornCfg.type,
+      ornCfg.anchor,
+      composed.anchors,
+      masterItem.bounds,
+      strokeWidth,
+      ornCfg.welded,
+    );
+    if (ornamentItem) {
+      const united = masterItem.unite(ornamentItem, { insert: false });
+      masterItem.remove();
+      masterItem = united;
+    }
+  }
+
+  if (blueprint.rotationDeg !== 0) {
+    masterItem.rotate(blueprint.rotationDeg, masterItem.bounds.center);
+  }
+
+  const ornamentBox = ornamentItem ? boxOf(ornamentItem) : null;
+  const frameBox = frame ? boxOf(frame) : null;
+  const frameContours = frame ? contourCount(frame) : 0;
+  if (ornamentItem) ornamentItem.remove();
+  if (frame) frame.remove();
+
+  const processed = postProcessForge(scope, masterItem, strokeWidth, breathingGaps);
+
+  if (!processed.pathData || processed.pathData.length < 8) {
+    throw new Error("El compilador V2 generó un trazado vacío");
+  }
+  if (/<text[\s>]/.test(processed.pathData) || /NaN|Infinity/.test(processed.pathData)) {
+    throw new Error("El compilador V2 generó un trazado inválido");
+  }
+
+  const quality: ForgeQuality =
+    combineQuality(qualities) ?? {
+      score: 96,
+      selfIntersections: 0,
+      containmentErrors: 0,
+      distanceErrors: 0,
+      warnings: [],
+      segmentCount: processed.contours,
+      area: Math.round(processed.inkDensity * VIEWBOX * VIEWBOX),
+    };
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${VIEWBOX} ${VIEWBOX}" width="${VIEWBOX}" height="${VIEWBOX}" role="img"><title>MI HIERRO ${escapeXml(combination.label)}</title>${METAL_DEFS}<path d="${processed.pathData}" fill="url(#forge-metal)" fill-rule="evenodd" clip-rule="evenodd"/></svg>`;
+
+  return {
+    svg,
+    pathData: processed.pathData,
+    scores: computeScores(blueprint, letters.length, blueprint.frame !== "none", quality, processed.inkDensity),
+    minStroke: processed.effectiveStroke,
+    quality,
+    geometry: {
+      glyph: glyphBox,
+      frame: frameBox,
+      ornament: ornamentBox,
+      contours: processed.contours,
+      frameContours,
+      inkDensity: processed.inkDensity,
+    },
+  };
+}
+
 export function compileForge(blueprint: BrandBlueprint, combination: InitialsCombination): CompiledForge {
   const scope = paper as unknown as paper.PaperScope;
   scope.setup(new paper.Size(VIEWBOX, VIEWBOX));
+
+  if (blueprint.architecture) {
+    return compileV2(scope, blueprint, combination);
+  }
 
   const letters = combination.letters.length > 0 ? combination.letters : [combination.primary];
   const style = blueprint.style;

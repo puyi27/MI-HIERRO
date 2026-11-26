@@ -73,3 +73,8 @@ Next.js (App Router) · React · TypeScript estricto · Tailwind CSS · Framer M
 - Informe de Similitud 19,90 € bajo pedido (ticket + aviso al administrador).
 - Leads de revisión profesional 49–99 € y forja física.
 - Home comercial, cuatro landings SEO, legales, `sitemap.ts` y `robots.ts`.
+
+
+
+
+# quiero q me des como antes los prompts exahustivos para antigravity para que lo entrene solo de forma automática y se autorevise de forma objetiva en base la perspecctiva q tenemos

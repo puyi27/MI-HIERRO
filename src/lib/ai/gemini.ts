@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import {
+  ARCHITECTURES,
   brandBlueprintSchema,
   type BrandBlueprint,
   type GenerateRequest,
@@ -12,9 +13,24 @@ export interface BlueprintBatch {
   source: "gemini" | "deterministic";
 }
 
-const SYSTEM_PROMPT = `Eres el maestro forjador de MI HIERRO. Diseñas hierros ganaderos, marcas personales de novilleros y emblemas de yeguadas PRE.
-Devuelve exactamente tres propuestas en JSON con la forma {"proposals":[{"blueprint":{...},"explanation":"..."}]}.
-Cada blueprint respeta este contrato: combo (iniciales), style (tradicional|monograma|geometrico|heraldico), fontFamily (cinzel|cormorant|inter), layout (interlocked|stacked|shield|arc), frame (none|circle|arch|double-bar), ornament (none|cross|crown|arch|shield|star), strokeWidth (6-16), rotationDeg (-8 a 8) y lore (una frase de 20 a 240 caracteres).
+const SYSTEM_PROMPT = `Eres el maestro forjador de MI HIERRO, especialista en heráldica ganadera española, marcas de novilleros y hierros de yeguadas PRE.
+Analiza la anatomía real de las letras proporcionadas (astas verticales, senos abiertos como C/G/O/U, vértices como A/V/M) y devuelve exactamente tres propuestas en JSON con la forma {"proposals":[{"blueprint":{...},"explanation":"..."}]}.
+REGLA OBLIGATORIA: Las 3 propuestas deben tener valores de "architecture" DISTINTOS entre sí.
+Cada blueprint respeta este contrato:
+- combo (iniciales)
+- style (tradicional|monograma|geometrico|heraldico)
+- fontFamily (cinzel|cormorant|inter)
+- layout (interlocked|stacked|shield|arc)
+- frame (none|circle|arch|double-bar)
+- ornament (none|cross|crown|arch|shield|star)
+- strokeWidth (6-16)
+- rotationDeg (-8 a 8)
+- lore (frase de 20 a 240 caracteres)
+- architecture (shared_stem|mirrored_crest|nested_cavity|interlock_knockout|integrated_arch|cauldron_handle)
+- glyphSource ("skeleton")
+- terminalStyle (forged_spur|flared_serif|chisel_bevel|teardrop|clean_bar)
+- ornamentConfig: {"type": "none|corona_abierta|cruz_forja|asa_caldera|arco_portico|bocado_pre|herradura_limpia|horquilla|doble_barra", "anchor": "topApex|leftStem|rightStem|innerCavity|baseFoot|center", "welded": true}
+- breathingGaps: true
 La explicación debe ser una frase breve en español, personalizada con el nombre y la procedencia, y nunca prometer registro ni exclusividad.`;
 
 function fallbackBatch(input: GenerateRequest): BlueprintBatch {
@@ -42,6 +58,24 @@ function coerceProposals(raw: unknown): { blueprint: BrandBlueprint; explanation
   return parsed;
 }
 
+function ensureDistinctArchitectures(blueprints: BrandBlueprint[]): BrandBlueprint[] {
+  const used = new Set<string>();
+  return blueprints.map((bp) => {
+    let arch = bp.architecture ?? "shared_stem";
+    if (used.has(arch)) {
+      arch = ARCHITECTURES.find((candidate) => !used.has(candidate)) ?? arch;
+    }
+    used.add(arch);
+    return {
+      ...bp,
+      architecture: arch,
+      glyphSource: bp.glyphSource ?? "skeleton",
+      terminalStyle: bp.terminalStyle ?? "forged_spur",
+      breathingGaps: bp.breathingGaps ?? true,
+    };
+  });
+}
+
 export async function generateBlueprints(input: GenerateRequest): Promise<BlueprintBatch> {
   const fallback = fallbackBatch(input);
   const apiKey = process.env.GEMINI_API_KEY;
@@ -61,7 +95,7 @@ Remate deseado: ${profile.remate}
 Iniciales seleccionadas: ${input.initials.letters.join("")} (${input.initials.kind})
 Estilo solicitado: ${input.style}
 
-Genera tres variantes reales del estilo solicitado, con layouts y remates distintos pero coherentes.`;
+Genera tres variantes reales del estilo solicitado, con arquitecturas distintas entre sí.`;
 
     const response = await client.models.generateContent({
       model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
@@ -69,7 +103,7 @@ Genera tres variantes reales del estilo solicitado, con layouts y remates distin
       config: {
         responseMimeType: "application/json",
         temperature: 0.9,
-        maxOutputTokens: 1400,
+        maxOutputTokens: 1600,
       },
     });
 
@@ -89,7 +123,11 @@ Genera tres variantes reales del estilo solicitado, con layouts y remates distin
       explanations.push(fallback.explanations[index]);
     }
 
-    return { blueprints: blueprints.slice(0, 3), explanations: explanations.slice(0, 3), source: "gemini" };
+    return {
+      blueprints: ensureDistinctArchitectures(blueprints.slice(0, 3)),
+      explanations: explanations.slice(0, 3),
+      source: "gemini",
+    };
   } catch {
     return fallback;
   }

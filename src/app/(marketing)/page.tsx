@@ -6,6 +6,7 @@ import { StyleShowcase } from "@/components/marketing/StyleShowcase";
 import { PlanGrid } from "@/components/marketing/PlanGrid";
 import { LegalNotice } from "@/components/layout/LegalNotice";
 import { ForgeCompareSlider } from "@/components/marketing/ForgeCompareSlider";
+import { ProfileCarousel } from "@/components/marketing/ProfileCarousel";
 
 export const metadata: Metadata = {
   title: "Tu hierro, tu marca, tu legado",
@@ -13,13 +14,6 @@ export const metadata: Metadata = {
     "Forja tu hierro ganadero con IA y criterio editorial: cuatro estilos, visor realista sobre hierro, capote y cuero, y entrega vectorial forjable.",
   alternates: { canonical: "/" },
 };
-
-const PROFILES = [
-  { key: "novillero", label: "Novillero / Torero", image: "/images/perfil-novillero.jpg", href: "/forjar?perfil=novillero" },
-  { key: "ganaderia", label: "Ganadería", image: "/images/perfil-ganaderia.jpg", href: "/forjar?perfil=ganaderia" },
-  { key: "yeguada", label: "Yeguada PRE", image: "/images/perfil-yeguada.jpg", href: "/forjar?perfil=ganaderia" },
-  { key: "particular", label: "Finca / Particular", image: "/images/detalle-cuero.jpg", href: "/forjar?perfil=particular" },
-];
 
 const PROCESS_STEPS = [
   { num: "I", title: "Filiación y perfil", body: "Sin registro. Solo tu nombre, apellidos y tipo de hierro." },
@@ -67,29 +61,7 @@ export default function HomePage() {
       <section className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
         <p className="eyebrow">¿Para quién forjamos?</p>
         <h2 className="mt-3 font-display text-2xl text-forge-ink sm:text-3xl">Elige tu perfil y empieza</h2>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {PROFILES.map((p) => (
-            <Link
-              key={p.key}
-              href={p.href}
-              className="group relative overflow-hidden rounded-[2px] border border-forge-border bg-forge-white transition hover:border-forge-grana"
-            >
-              <div className="relative aspect-[3/4] w-full overflow-hidden">
-                <Image
-                  src={p.image}
-                  alt={p.label}
-                  fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 280px"
-                  className="photo-editorial object-cover transition duration-500 group-hover:scale-105"
-                />
-              </div>
-              <div className="flex items-center justify-between p-4">
-                <span className="font-display text-sm tracking-[0.06em] text-forge-ink">{p.label}</span>
-                <ArrowUpRight className="h-3.5 w-3.5 text-forge-graphite transition group-hover:text-forge-grana" aria-hidden />
-              </div>
-            </Link>
-          ))}
-        </div>
+        <ProfileCarousel />
       </section>
 
       <section className="border-y-2 border-forge-gold bg-forge-ink text-forge-paper">
