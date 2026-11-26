@@ -10,10 +10,10 @@ export function Chip({ label, selected, onSelect }: ChipProps) {
       type="button"
       onClick={onSelect}
       aria-pressed={selected}
-      className={`border px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] transition ${
+      className={`border px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition ${
         selected
-          ? "border-forge-bronze bg-forge-bronze/12 text-forge-ivory"
-          : "border-forge-line bg-transparent text-forge-muted hover:border-forge-bronze/60 hover:text-forge-ivory"
+          ? "border-forge-leather bg-forge-leather/8 text-forge-ink"
+          : "border-forge-border bg-transparent text-forge-graphite hover:border-forge-leather hover:text-forge-ink"
       }`}
     >
       {label}

@@ -39,7 +39,7 @@ function when(value: string): string {
 }
 
 function Empty({ message }: { message: string }) {
-  return <p className="px-4 py-6 text-xs text-forge-muted">{message}</p>;
+  return <p className="px-4 py-6 text-xs text-forge-graphite">{message}</p>;
 }
 
 export function AdminDashboard({ orders, leads, reports, storeDriver, storeError }: AdminDashboardProps) {
@@ -52,9 +52,9 @@ export function AdminDashboard({ orders, leads, reports, storeDriver, storeError
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="eyebrow">Forge Ops</p>
-          <h1 className="mt-3 font-display text-3xl leading-tight text-forge-ivory">Panel operativo</h1>
-          <p className="mt-2 text-xs text-forge-muted">
-            Almacén: <span className="text-forge-bronze">{storeDriver === "prisma" ? "Postgres / Neon" : "fichero local"}</span> ·
+          <h1 className="mt-3 font-display text-3xl leading-tight text-forge-ink">Panel operativo</h1>
+          <p className="mt-2 text-xs text-forge-graphite">
+            Almacén: <span className="font-semibold text-forge-leather">{storeDriver === "prisma" ? "Postgres / Neon" : "fichero local"}</span> ·
             Pedidos, informes y encargos en tiempo real.
           </p>
         </div>
@@ -62,41 +62,41 @@ export function AdminDashboard({ orders, leads, reports, storeDriver, storeError
       </div>
 
       {storeError ? (
-        <div role="alert" className="mt-6 border border-[#6d3a2b] bg-[#251512] p-4 text-xs text-[#e6b4a1]">
+        <div role="alert" className="mt-6 border border-forge-grana/40 bg-forge-grana/5 p-4 text-xs text-forge-grana">
           El almacén no responde: {storeError}. Revisa DATABASE_URL.
         </div>
       ) : null}
 
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
-        <div className="border border-forge-line bg-forge-surface p-5">
+        <div className="border border-forge-border bg-forge-white p-5">
           <p className="eyebrow-muted">Ingresos cobrados</p>
-          <p className="mt-2 font-display text-3xl text-forge-ivory">{euros(revenue)}</p>
-          <p className="mt-1 text-[0.6rem] uppercase tracking-[0.18em] text-forge-muted">{paidOrders.length} pedidos pagados</p>
+          <p className="mt-2 font-display text-3xl text-forge-ink">{euros(revenue)}</p>
+          <p className="mt-1 text-[0.6rem] uppercase tracking-[0.16em] text-forge-graphite">{paidOrders.length} pedidos pagados</p>
         </div>
-        <div className="border border-forge-line bg-forge-surface p-5">
+        <div className="border border-forge-border bg-forge-white p-5">
           <p className="eyebrow-muted">Informes abiertos</p>
-          <p className="mt-2 font-display text-3xl text-forge-ivory">{openReports}</p>
-          <p className="mt-1 text-[0.6rem] uppercase tracking-[0.18em] text-forge-muted">Pendientes o en revisión</p>
+          <p className="mt-2 font-display text-3xl text-forge-ink">{openReports}</p>
+          <p className="mt-1 text-[0.6rem] uppercase tracking-[0.16em] text-forge-graphite">Pendientes o en revisión</p>
         </div>
-        <div className="border border-forge-line bg-forge-surface p-5">
+        <div className="border border-forge-border bg-forge-white p-5">
           <p className="eyebrow-muted">Leads de forja</p>
-          <p className="mt-2 font-display text-3xl text-forge-ivory">{leads.length}</p>
-          <p className="mt-1 text-[0.6rem] uppercase tracking-[0.18em] text-forge-muted">Revisiones y encargos físicos</p>
+          <p className="mt-2 font-display text-3xl text-forge-ink">{leads.length}</p>
+          <p className="mt-1 text-[0.6rem] uppercase tracking-[0.16em] text-forge-graphite">Revisiones y encargos físicos</p>
         </div>
       </div>
 
       <section className="mt-10">
         <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-forge-bronze" aria-hidden />
-          <h2 className="font-display text-xl tracking-wide text-forge-ivory">Informes de similitud</h2>
+          <FileText className="h-4 w-4 text-forge-leather" aria-hidden />
+          <h2 className="font-display text-xl tracking-wide text-forge-ink">Informes de similitud</h2>
         </div>
-        <div className="mt-4 overflow-x-auto border border-forge-line bg-forge-surface">
+        <div className="mt-4 overflow-x-auto border border-forge-border bg-forge-white">
           {reports.length === 0 ? (
             <Empty message="Todavía no hay informes de similitud." />
           ) : (
             <table className="w-full min-w-[720px] border-collapse text-left text-xs">
               <thead>
-                <tr className="border-b border-forge-line text-[0.58rem] uppercase tracking-[0.18em] text-forge-muted">
+                <tr className="border-b border-forge-border bg-forge-stone/50 text-[0.58rem] uppercase tracking-[0.16em] text-forge-graphite">
                   <th className="px-4 py-3 font-semibold">Fecha</th>
                   <th className="px-4 py-3 font-semibold">Cliente</th>
                   <th className="px-4 py-3 font-semibold">Estado</th>
@@ -106,14 +106,14 @@ export function AdminDashboard({ orders, leads, reports, storeDriver, storeError
               </thead>
               <tbody>
                 {reports.map((report) => (
-                  <tr key={report.id} className="border-b border-forge-line/60 last:border-0">
-                    <td className="px-4 py-3 text-forge-muted">{when(report.createdAt)}</td>
+                  <tr key={report.id} className="border-b border-forge-border/60 last:border-0">
+                    <td className="px-4 py-3 text-forge-graphite">{when(report.createdAt)}</td>
                     <td className="px-4 py-3">
-                      <p className="text-forge-ivory">{report.name ?? "Sin nombre"}</p>
-                      <p className="mt-0.5 text-[0.62rem] text-forge-muted">{report.email}</p>
+                      <p className="font-medium text-forge-ink">{report.name ?? "Sin nombre"}</p>
+                      <p className="mt-0.5 text-[0.62rem] text-forge-graphite">{report.email}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="border border-forge-bronze/40 px-2 py-1 text-[0.55rem] uppercase tracking-[0.16em] text-forge-bronze">
+                      <span className="border border-forge-border px-2 py-1 text-[0.55rem] uppercase tracking-[0.14em] text-forge-leather">
                         {REPORT_LABEL[report.status] ?? report.status}
                       </span>
                     </td>
@@ -121,13 +121,13 @@ export function AdminDashboard({ orders, leads, reports, storeDriver, storeError
                       {report.designId ? (
                         <a
                           href={`/api/admin/designs/${report.designId}/svg`}
-                          className="inline-flex items-center gap-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-forge-bronze hover:text-forge-ivory"
+                          className="inline-flex items-center gap-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-forge-grana hover:underline"
                         >
                           <Download className="h-3 w-3" aria-hidden />
                           SVG maestro
                         </a>
                       ) : (
-                        <span className="text-forge-muted">—</span>
+                        <span className="text-forge-graphite">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -143,16 +143,16 @@ export function AdminDashboard({ orders, leads, reports, storeDriver, storeError
 
       <section className="mt-10">
         <div className="flex items-center gap-2">
-          <Inbox className="h-4 w-4 text-forge-bronze" aria-hidden />
-          <h2 className="font-display text-xl tracking-wide text-forge-ivory">Pedidos</h2>
+          <Inbox className="h-4 w-4 text-forge-leather" aria-hidden />
+          <h2 className="font-display text-xl tracking-wide text-forge-ink">Pedidos</h2>
         </div>
-        <div className="mt-4 overflow-x-auto border border-forge-line bg-forge-surface">
+        <div className="mt-4 overflow-x-auto border border-forge-border bg-forge-white">
           {orders.length === 0 ? (
             <Empty message="Todavía no hay pedidos." />
           ) : (
             <table className="w-full min-w-[720px] border-collapse text-left text-xs">
               <thead>
-                <tr className="border-b border-forge-line text-[0.58rem] uppercase tracking-[0.18em] text-forge-muted">
+                <tr className="border-b border-forge-border bg-forge-stone/50 text-[0.58rem] uppercase tracking-[0.16em] text-forge-graphite">
                   <th className="px-4 py-3 font-semibold">Fecha</th>
                   <th className="px-4 py-3 font-semibold">Producto</th>
                   <th className="px-4 py-3 font-semibold">Importe</th>
@@ -163,31 +163,31 @@ export function AdminDashboard({ orders, leads, reports, storeDriver, storeError
               </thead>
               <tbody>
                 {orders.map((order) => (
-                  <tr key={order.id} className="border-b border-forge-line/60 last:border-0">
-                    <td className="px-4 py-3 text-forge-muted">{when(order.createdAt)}</td>
-                    <td className="px-4 py-3 text-forge-ivory">{PRODUCT_LABEL[order.product] ?? order.product}</td>
-                    <td className="px-4 py-3 font-display text-sm text-forge-bronze">{euros(order.amountCents)}</td>
+                  <tr key={order.id} className="border-b border-forge-border/60 last:border-0">
+                    <td className="px-4 py-3 text-forge-graphite">{when(order.createdAt)}</td>
+                    <td className="px-4 py-3 font-medium text-forge-ink">{PRODUCT_LABEL[order.product] ?? order.product}</td>
+                    <td className="px-4 py-3 font-display text-sm text-forge-leather">{euros(order.amountCents)}</td>
                     <td className="px-4 py-3">
                       <span
-                        className={`text-[0.58rem] uppercase tracking-[0.16em] ${
-                          order.status === "paid" ? "text-forge-bronze" : "text-forge-muted"
+                        className={`text-[0.58rem] uppercase tracking-[0.14em] ${
+                          order.status === "paid" ? "font-semibold text-forge-grana" : "text-forge-graphite"
                         }`}
                       >
                         {ORDER_STATUS[order.status] ?? order.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-forge-muted">{order.email ?? "—"}</td>
+                    <td className="px-4 py-3 text-forge-graphite">{order.email ?? "—"}</td>
                     <td className="px-4 py-3">
                       {order.designId ? (
                         <a
                           href={`/api/admin/designs/${order.designId}/svg`}
-                          className="inline-flex items-center gap-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-forge-bronze hover:text-forge-ivory"
+                          className="inline-flex items-center gap-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-forge-grana hover:underline"
                         >
                           <Download className="h-3 w-3" aria-hidden />
                           Descargar
                         </a>
                       ) : (
-                        <span className="text-forge-muted">—</span>
+                        <span className="text-forge-graphite">—</span>
                       )}
                     </td>
                   </tr>
@@ -200,32 +200,32 @@ export function AdminDashboard({ orders, leads, reports, storeDriver, storeError
 
       <section className="mt-10">
         <div className="flex items-center gap-2">
-          <Hammer className="h-4 w-4 text-forge-bronze" aria-hidden />
-          <h2 className="font-display text-xl tracking-wide text-forge-ivory">Leads de revisión y forja</h2>
+          <Hammer className="h-4 w-4 text-forge-leather" aria-hidden />
+          <h2 className="font-display text-xl tracking-wide text-forge-ink">Leads de revisión y forja</h2>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {leads.length === 0 ? (
-            <div className="border border-forge-line bg-forge-surface">
+            <div className="border border-forge-border bg-forge-white">
               <Empty message="Todavía no hay solicitudes." />
             </div>
           ) : (
             leads.map((lead) => (
-              <article key={lead.id} className="border border-forge-line bg-forge-surface p-4">
+              <article key={lead.id} className="border border-forge-border bg-forge-white p-4">
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="font-display text-base text-forge-ivory">{lead.name}</p>
-                  <span className="text-[0.55rem] uppercase tracking-[0.16em] text-forge-bronze">
+                  <p className="font-display text-base text-forge-ink">{lead.name}</p>
+                  <span className="text-[0.55rem] uppercase tracking-[0.14em] text-forge-grana">
                     {lead.type === "forja" ? "Forja física" : "Revisión"}
                   </span>
                 </div>
-                <p className="mt-1 text-[0.62rem] text-forge-muted">
+                <p className="mt-1 text-[0.62rem] text-forge-graphite">
                   {lead.email}
                   {lead.phone ? ` · ${lead.phone}` : ""} · {when(lead.createdAt)}
                 </p>
-                <p className="mt-3 border-t border-forge-line pt-3 text-xs leading-relaxed text-forge-muted">{lead.message}</p>
+                <p className="mt-3 border-t border-forge-border pt-3 text-xs leading-relaxed text-forge-graphite">{lead.message}</p>
                 {lead.designId ? (
                   <a
                     href={`/api/admin/designs/${lead.designId}/svg`}
-                    className="mt-3 inline-flex items-center gap-1.5 text-[0.6rem] uppercase tracking-[0.14em] text-forge-bronze hover:text-forge-ivory"
+                    className="mt-3 inline-flex items-center gap-1.5 text-[0.6rem] uppercase tracking-[0.14em] text-forge-grana hover:underline"
                   >
                     <Download className="h-3 w-3" aria-hidden />
                     SVG del expediente
@@ -237,7 +237,7 @@ export function AdminDashboard({ orders, leads, reports, storeDriver, storeError
         </div>
       </section>
 
-      <p className="mt-10 border-t border-forge-line pt-5 text-[0.6rem] uppercase tracking-[0.2em] text-forge-muted/70">
+      <p className="mt-10 border-t border-forge-border pt-5 text-[0.6rem] uppercase tracking-[0.18em] text-forge-graphite">
         MI HIERRO propone y orienta · No certifica disponibilidad registral
       </p>
     </div>

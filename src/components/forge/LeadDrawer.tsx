@@ -63,16 +63,16 @@ export function LeadDrawer({
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground={false}>
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-40 bg-forge-void/85" />
+        <Drawer.Overlay className="fixed inset-0 z-40 bg-forge-ink/50" />
         <Drawer.Content
-          className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[92dvh] w-full max-w-xl overflow-y-auto overscroll-contain border-t border-forge-line bg-forge-surface px-5 pb-8 pt-3 outline-none"
+          className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[92dvh] w-full max-w-xl overflow-y-auto overscroll-contain border-t border-forge-border bg-forge-white px-5 pb-8 pt-3 outline-none"
           aria-describedby={undefined}
         >
-          <div className="mx-auto mb-4 h-1 w-12 bg-forge-line" aria-hidden />
+          <div className="mx-auto mb-4 h-1 w-12 bg-forge-border" aria-hidden />
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="eyebrow-muted">Servicios profesionales</p>
-              <Drawer.Title className="mt-2 font-display text-2xl leading-tight text-forge-ivory">
+              <Drawer.Title className="mt-2 font-display text-2xl leading-tight text-forge-ink">
                 {type === "revision" ? "Revisión 49–99 €" : "Forja física"}
               </Drawer.Title>
             </div>
@@ -80,14 +80,14 @@ export function LeadDrawer({
               <button
                 type="button"
                 aria-label="Cerrar solicitud"
-                className="border border-forge-line p-2 text-forge-muted transition hover:border-forge-bronze hover:text-forge-ivory"
+                className="border border-forge-border p-2 text-forge-graphite transition hover:border-forge-grana hover:text-forge-grana"
               >
                 <X className="h-4 w-4" aria-hidden />
               </button>
             </Drawer.Close>
           </div>
 
-          <p className="mt-3 text-xs leading-relaxed text-forge-muted">
+          <p className="mt-3 text-xs leading-relaxed text-forge-graphite">
             {type === "revision"
               ? "Adjuntamos tu diseño al expediente y valoramos similitudes, viabilidad y alcance registral orientativo."
               : "Te respondemos con presupuesto, herraje y plazo de entrega para llevar el hierro al taller."}
@@ -123,8 +123,8 @@ export function LeadDrawer({
               />
             </div>
             <div className="sm:col-span-2">
-              <label htmlFor="leadMessage" className="mb-2 block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-forge-muted">
-                Cuéntanos qué necesitas <span className="text-forge-bronze">*</span>
+              <label htmlFor="leadMessage" className="mb-2 block text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-forge-graphite">
+                Cuéntanos qué necesitas <span className="text-forge-grana">*</span>
               </label>
               <textarea
                 id="leadMessage"
@@ -136,7 +136,7 @@ export function LeadDrawer({
                 placeholder="Quiero revisar si este hierro se parece a alguno existente y pedir presupuesto de forja."
               />
               {error ? (
-                <p role="alert" className="mt-2 text-xs text-[#d98b70]">
+                <p role="alert" className="mt-2 text-xs text-forge-grana">
                   {error}
                 </p>
               ) : null}
@@ -152,7 +152,7 @@ export function LeadDrawer({
             <p
               role="status"
               className={`mt-4 flex items-start gap-2 text-xs leading-relaxed ${
-                feedback.kind === "success" ? "text-forge-bronze" : "text-[#d98b70]"
+                feedback.kind === "success" ? "text-forge-leather" : "text-forge-grana"
               }`}
             >
               <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />

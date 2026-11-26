@@ -1,21 +1,32 @@
 @import "tailwindcss";
 
 @theme {
-  --color-forge-void: #0c0b0a;
-  --color-forge-surface: #151311;
-  --color-forge-raised: #1b1815;
-  --color-forge-line: #2b2622;
-  --color-forge-bronze: #c89b63;
-  --color-forge-bronze-soft: #e2c6a0;
-  --color-forge-ivory: #f2e9da;
-  --color-forge-muted: #a2968a;
+  --color-forge-paper: #F7F3EA;
+  --color-forge-stone: #EFE7D6;
+  --color-forge-white: #FFFDF9;
+  --color-forge-border: #D6C9B4;
+  --color-forge-ink: #161412;
+  --color-forge-graphite: #4E473F;
+  --color-forge-leather: #7D511E;
+  --color-forge-leather-hover: #5E3C14;
+  --color-forge-gold: #B8832E;
+  --color-forge-grana: #6B141E;
+  --color-forge-grana-hover: #530E16;
+  --color-forge-void: #161412;
+  --color-forge-surface: #1F1C19;
+  --color-forge-raised: #26221E;
+  --color-forge-line: #D6C9B4;
+  --color-forge-bronze: #B8832E;
+  --color-forge-bronze-soft: #D6B272;
+  --color-forge-ivory: #F7F3EA;
+  --color-forge-muted: #4E473F;
   --font-display: var(--font-cinzel), "Times New Roman", serif;
   --font-editorial: var(--font-cormorant), Georgia, serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html {
@@ -24,78 +35,90 @@ html {
 }
 
 body {
-  background-color: var(--color-forge-void);
-  color: var(--color-forge-ivory);
+  background-color: var(--color-forge-paper);
+  color: var(--color-forge-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  background-image:
-    radial-gradient(900px 480px at 50% -12%, rgba(200, 155, 99, 0.1), transparent 68%),
-    radial-gradient(700px 520px at 100% 8%, rgba(200, 155, 99, 0.045), transparent 70%);
-  background-repeat: no-repeat;
   overflow-x: hidden;
 }
 
 ::selection {
-  background: rgba(200, 155, 99, 0.35);
-  color: var(--color-forge-ivory);
+  background: rgba(107, 20, 30, 0.16);
+  color: var(--color-forge-ink);
 }
 
 .eyebrow {
   font-size: 0.66rem;
-  letter-spacing: 0.4em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--color-forge-bronze);
+  color: var(--color-forge-grana);
   font-weight: 600;
 }
 
 .eyebrow-muted {
   font-size: 0.62rem;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--color-forge-muted);
+  color: var(--color-forge-graphite);
 }
 
 .panel {
-  background:
-    linear-gradient(160deg, rgba(200, 155, 99, 0.055), transparent 42%),
-    var(--color-forge-surface);
-  border: 1px solid var(--color-forge-line);
+  background: var(--color-forge-white);
+  border: 1px solid var(--color-forge-border);
+  border-radius: 2px;
 }
 
 .panel-quiet {
-  background: rgba(21, 19, 17, 0.6);
-  border: 1px solid var(--color-forge-line);
+  background: var(--color-forge-stone);
+  border: 1px solid var(--color-forge-border);
+  border-radius: 2px;
 }
 
 .rule {
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--color-forge-line) 18%, var(--color-forge-line) 82%, transparent);
+  background: var(--color-forge-border);
+}
+
+.double-rule-b {
+  border-bottom: 1px solid var(--color-forge-border);
+  box-shadow: 0 3px 0 0 var(--color-forge-paper), 0 4px 0 0 var(--color-forge-border);
+}
+
+.double-rule-y {
+  border-top: 1px solid var(--color-forge-border);
+  border-bottom: 1px solid var(--color-forge-border);
+  box-shadow:
+    inset 0 3px 0 0 var(--color-forge-paper),
+    inset 0 4px 0 0 var(--color-forge-border),
+    inset 0 -3px 0 0 var(--color-forge-paper),
+    inset 0 -4px 0 0 var(--color-forge-border);
 }
 
 .field {
   width: 100%;
-  background: var(--color-forge-void);
-  border: 1px solid var(--color-forge-line);
-  color: var(--color-forge-ivory);
-  padding: 0.85rem 1rem;
+  background: var(--color-forge-white);
+  border: 1px solid var(--color-forge-border);
+  border-radius: 2px;
+  color: var(--color-forge-ink);
+  padding: 0.8rem 0.95rem;
   font-size: 0.95rem;
   line-height: 1.35;
   transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
 
 .field::placeholder {
-  color: rgba(162, 150, 138, 0.62);
+  color: rgba(78, 71, 63, 0.55);
 }
 
 .field:focus {
   outline: none;
-  border-color: var(--color-forge-bronze);
-  box-shadow: 0 0 0 3px rgba(200, 155, 99, 0.14);
-  background: #100e0c;
+  border-color: var(--color-forge-leather);
+  box-shadow: 0 0 0 2px rgba(184, 131, 46, 0.18);
+  background: var(--color-forge-white);
 }
 
 .field[aria-invalid="true"] {
-  border-color: #b4563c;
+  border-color: var(--color-forge-grana);
 }
 
 .btn-primary {
@@ -103,20 +126,22 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  background: var(--color-forge-bronze);
-  color: var(--color-forge-void);
-  border: 1px solid var(--color-forge-bronze);
-  padding: 0.95rem 1.6rem;
-  font-size: 0.82rem;
+  background: var(--color-forge-ink);
+  color: var(--color-forge-paper);
+  border: 1px solid var(--color-forge-ink);
+  border-radius: 2px;
+  padding: 0.85rem 1.6rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
 
 .btn-primary:hover {
-  background: var(--color-forge-ivory);
-  border-color: var(--color-forge-ivory);
+  background: var(--color-forge-grana);
+  border-color: var(--color-forge-grana);
+  color: var(--color-forge-paper);
 }
 
 .btn-primary:active {
@@ -133,20 +158,22 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.55rem;
-  border: 1px solid var(--color-forge-line);
-  color: var(--color-forge-ivory);
-  padding: 0.95rem 1.5rem;
-  font-size: 0.8rem;
+  border: 1px solid var(--color-forge-border);
+  border-radius: 2px;
+  background: var(--color-forge-white);
+  color: var(--color-forge-ink);
+  padding: 0.85rem 1.5rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   transition: border-color 180ms ease, color 180ms ease, background-color 180ms ease;
 }
 
 .btn-ghost:hover {
-  border-color: var(--color-forge-bronze);
-  color: var(--color-forge-bronze);
-  background: rgba(200, 155, 99, 0.06);
+  border-color: var(--color-forge-grana);
+  color: var(--color-forge-grana);
+  background: var(--color-forge-paper);
 }
 
 .btn-ghost:disabled {
@@ -157,47 +184,36 @@ body {
 .card-select {
   text-align: left;
   width: 100%;
-  background: var(--color-forge-surface);
-  border: 1px solid var(--color-forge-line);
+  background: var(--color-forge-white);
+  border: 1px solid var(--color-forge-border);
+  border-radius: 2px;
   transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
 }
 
 .card-select:hover {
-  border-color: rgba(200, 155, 99, 0.55);
-  background: var(--color-forge-raised);
+  border-color: var(--color-forge-leather);
+  background: var(--color-forge-white);
 }
 
 .card-select[data-selected="true"] {
-  border-color: var(--color-forge-bronze);
-  background:
-    linear-gradient(150deg, rgba(200, 155, 99, 0.14), transparent 60%),
-    var(--color-forge-raised);
-  box-shadow: inset 0 0 0 1px rgba(200, 155, 99, 0.22);
+  border-color: var(--color-forge-grana);
+  background: var(--color-forge-white);
+  box-shadow: inset 0 0 0 1px var(--color-forge-grana);
 }
 
 .numeral {
   font-family: var(--font-display);
-  color: var(--color-forge-bronze);
+  color: var(--color-forge-leather);
   letter-spacing: 0.08em;
-}
-
-.grain::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.5;
-  background-image: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 4px);
-  mix-blend-mode: overlay;
 }
 
 .forge-canvas {
   width: 100%;
   height: auto;
   display: block;
-  background: #0a0908;
-  border: 1px solid var(--color-forge-line);
-  touch-action: pan-y;
+  background: #12100e;
+  border: 1px solid var(--color-forge-border);
+  touch-action: none;
   cursor: crosshair;
 }
 
@@ -215,11 +231,11 @@ html.lenis body {
 }
 
 .forge-toast {
-  border-left: 2px solid var(--color-forge-bronze) !important;
+  border-left: 2px solid var(--color-forge-gold) !important;
 }
 
 .forge-toast-error {
-  border-left-color: #b4563c !important;
+  border-left-color: var(--color-forge-grana) !important;
 }
 
 @keyframes forge-pulse {
@@ -234,6 +250,10 @@ html.lenis body {
 
 .forge-loading {
   animation: forge-pulse 1.8s ease-in-out infinite;
+}
+
+.photo-editorial {
+  filter: contrast(1.05) saturate(0.9) brightness(1.02);
 }
 
 @media (prefers-reduced-motion: reduce) {

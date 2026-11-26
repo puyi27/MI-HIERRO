@@ -47,12 +47,12 @@ export function AdminLogin({ localFallback }: AdminLoginProps) {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col px-5 py-16 sm:py-24">
       <p className="eyebrow">Forge Ops</p>
-      <h1 className="mt-4 font-display text-3xl leading-tight text-forge-ivory">Panel operativo</h1>
-      <p className="mt-3 text-sm leading-relaxed text-forge-muted">
+      <h1 className="mt-4 font-display text-3xl leading-tight text-forge-ink">Panel operativo</h1>
+      <p className="mt-3 text-sm leading-relaxed text-forge-graphite">
         Acceso reservado. Desde aquí se revisan pedidos, informes de similitud y encargos de forja física.
       </p>
 
-      <form onSubmit={submit} className="mt-8 border border-forge-line bg-forge-surface p-5">
+      <form onSubmit={submit} className="mt-8 border border-forge-border bg-forge-white p-5">
         <Field
           id="adminPassword"
           label="Contraseña"
@@ -65,7 +65,7 @@ export function AdminLogin({ localFallback }: AdminLoginProps) {
         />
 
         {error ? (
-          <p role="alert" className="mt-3 text-xs text-[#d98b70]">
+          <p role="alert" className="mt-3 text-xs text-forge-grana">
             {error}
           </p>
         ) : null}
@@ -76,13 +76,13 @@ export function AdminLogin({ localFallback }: AdminLoginProps) {
         </button>
 
         {localFallback ? (
-          <p className="mt-4 border-t border-forge-line pt-4 text-[0.65rem] leading-relaxed text-forge-muted/80">
-            Sin ADMIN_PASSWORD configurada. En local la contraseña de desarrollo es <span className="text-forge-bronze">mi-hierro-local-admin</span>.
+          <p className="mt-4 border-t border-forge-border pt-4 text-[0.65rem] leading-relaxed text-forge-graphite">
+            Sin ADMIN_PASSWORD configurada. En local la contraseña de desarrollo es <span className="font-semibold text-forge-leather">mi-hierro-local-admin</span>.
           </p>
         ) : null}
       </form>
 
-      <p className="mt-6 text-[0.6rem] uppercase tracking-[0.22em] text-forge-muted/70">
+      <p className="mt-6 text-[0.6rem] uppercase tracking-[0.18em] text-forge-graphite">
         MI HIERRO · Acceso restringido · noindex
       </p>
     </div>

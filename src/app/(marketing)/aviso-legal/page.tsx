@@ -13,8 +13,8 @@ export default function AvisoLegalPage() {
   return (
     <article className="mx-auto w-full max-w-3xl px-5 py-16 sm:px-8 sm:py-24">
       <p className="eyebrow">Información legal</p>
-      <h1 className="mt-4 font-display text-3xl text-forge-ivory sm:text-4xl">Aviso legal</h1>
-      <p className="mt-3 text-xs uppercase tracking-[0.2em] text-forge-muted">Última actualización: noviembre de 2026</p>
+      <h1 className="mt-4 font-display text-3xl text-forge-ink sm:text-4xl">Aviso legal</h1>
+      <p className="mt-3 text-xs uppercase tracking-[0.2em] text-forge-graphite">Última actualización: noviembre de 2026</p>
 
       <LegalNotice variant="full" className="mt-8" />
 
@@ -25,7 +25,7 @@ export default function AvisoLegalPage() {
           apertura comercial del servicio.
         </p>
         <p>
-          Contacto: <a className="text-forge-bronze underline-offset-4 hover:underline" href="mailto:hola@mihierro.es">hola@mihierro.es</a>.
+          Contacto: <a className="text-forge-leather underline-offset-4 hover:underline" href="mailto:hola@mihierro.es">hola@mihierro.es</a>.
         </p>
       </LegalSection>
 

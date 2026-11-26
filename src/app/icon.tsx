@@ -13,14 +13,14 @@ export default function Icon() {
           display: "flex",
           alignItems: "flex-end",
           justifyContent: "center",
-          background: "#0C0B0A",
+          background: "#F6F2EA",
           paddingBottom: 78,
-          border: "14px solid #151311",
+          border: "14px solid #EDE6D8",
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <div style={{ display: "flex", width: 18, height: 62, background: "#C89B63" }} />
-          <div style={{ display: "flex", width: 74, height: 18, background: "#C89B63", marginTop: -40 }} />
+          <div style={{ display: "flex", width: 18, height: 62, background: "#181614" }} />
+          <div style={{ display: "flex", width: 74, height: 18, background: "#181614", marginTop: -40 }} />
           <div
             style={{
               display: "flex",
@@ -30,16 +30,16 @@ export default function Icon() {
               height: 168,
               marginTop: 34,
               padding: "0 54px",
-              borderTop: "18px solid #C89B63",
-              borderLeft: "18px solid #C89B63",
-              borderRight: "18px solid #C89B63",
+              borderTop: "18px solid #181614",
+              borderLeft: "18px solid #181614",
+              borderRight: "18px solid #181614",
               borderRadius: "168px 168px 0 0",
             }}
           >
-            <div style={{ display: "flex", width: 18, height: 120, background: "#C89B63" }} />
-            <div style={{ display: "flex", width: 18, height: 120, background: "#C89B63" }} />
+            <div style={{ display: "flex", width: 18, height: 120, background: "#181614" }} />
+            <div style={{ display: "flex", width: 18, height: 120, background: "#181614" }} />
           </div>
-          <div style={{ display: "flex", width: 264, height: 18, background: "#C89B63", marginTop: 12 }} />
+          <div style={{ display: "flex", width: 264, height: 18, background: "#181614", marginTop: 12 }} />
         </div>
       </div>
     ),

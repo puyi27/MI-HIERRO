@@ -57,7 +57,7 @@ export function ReportStatusControl({ id, status }: ReportStatusControlProps) {
           id={`report-status-${id}`}
           value={value}
           onChange={(event) => setValue(event.target.value)}
-          className="border border-forge-line bg-forge-void px-2 py-1.5 text-[0.65rem] uppercase tracking-[0.14em] text-forge-ivory"
+          className="border border-forge-border bg-forge-white px-2 py-1.5 text-[0.65rem] uppercase tracking-[0.14em] text-forge-ink"
         >
           {OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
@@ -69,13 +69,13 @@ export function ReportStatusControl({ id, status }: ReportStatusControlProps) {
           type="button"
           onClick={save}
           disabled={busy || value === status}
-          className="border border-forge-bronze/60 px-2.5 py-1.5 text-[0.6rem] uppercase tracking-[0.14em] text-forge-bronze transition hover:bg-forge-bronze/10 disabled:opacity-40"
+          className="border border-forge-border bg-forge-paper px-2.5 py-1.5 text-[0.6rem] uppercase tracking-[0.14em] text-forge-grana transition hover:border-forge-grana disabled:opacity-40"
         >
           {busy ? <Loader2 className="h-3 w-3 animate-spin" aria-hidden /> : "Guardar"}
         </button>
       </div>
       {error ? (
-        <p role="alert" className="text-[0.6rem] text-[#d98b70]">
+        <p role="alert" className="text-[0.6rem] text-forge-grana">
           {error}
         </p>
       ) : null}

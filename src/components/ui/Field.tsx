@@ -32,12 +32,12 @@ export function Field({
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
   return (
     <div>
-      <label htmlFor={id} className="mb-2 flex items-baseline justify-between gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-forge-muted">
+      <label htmlFor={id} className="mb-2 flex items-baseline justify-between gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-forge-graphite">
         <span>
           {label}
-          {required ? <span className="ml-1 text-forge-bronze">*</span> : null}
+          {required ? <span className="ml-1 text-forge-leather">*</span> : null}
         </span>
-        {optionalLabel ? <span className="text-[0.6rem] tracking-[0.16em] text-forge-muted/70">{optionalLabel}</span> : null}
+        {optionalLabel ? <span className="text-[0.6rem] tracking-[0.12em] text-forge-graphite/70">{optionalLabel}</span> : null}
       </label>
       <input
         id={id}
@@ -55,11 +55,11 @@ export function Field({
         className="field"
       />
       {error ? (
-        <p id={`${id}-error`} role="alert" className="mt-2 text-xs text-[#d98b70]">
+        <p id={`${id}-error`} role="alert" className="mt-2 text-xs text-forge-grana">
           {error}
         </p>
       ) : hint ? (
-        <p id={`${id}-hint`} className="mt-2 text-xs text-forge-muted">
+        <p id={`${id}-hint`} className="mt-2 text-xs text-forge-graphite">
           {hint}
         </p>
       ) : null}

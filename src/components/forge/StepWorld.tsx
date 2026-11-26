@@ -1,53 +1,24 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { animate } from "animejs";
-import { Download, Eye, Loader2 } from "lucide-react";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import { Download, Eye, Loader2, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import type { ForgeProposal } from "@/types/forge";
 import { STYLE_META } from "@/types/forge";
 import { PreviewCanvas } from "@/components/forge/PreviewCanvas";
-import { TEXTURE_OPTIONS, type ForgeTexture } from "@/components/forge/types";
+import { DIVISA_OPTIONS, TEXTURE_OPTIONS, type ForgeTexture } from "@/components/forge/types";
 import { useMediaQuery } from "@/components/ui/useMediaQuery";
-import { prefersReducedMotion } from "@/lib/motion";
 
 interface StepWorldProps {
   proposals: ForgeProposal[];
   selectedProposal: ForgeProposal | null;
   texture: ForgeTexture;
   onTextureChange: (texture: ForgeTexture) => void;
+  divisaId: string;
+  onDivisaChange: (divisaId: string) => void;
   onSelectProposal: (proposalId: string) => void;
   onStory: () => void;
   storyBusy: boolean;
-}
-
-function ScoreBar({ label, value }: { label: string; value: number }) {
-  const barRef = useRef<HTMLSpanElement | null>(null);
-
-  useEffect(() => {
-    const bar = barRef.current;
-    if (!bar || prefersReducedMotion()) return;
-    const animation = animate(bar, { scaleX: [0, 1], duration: 900, ease: "out(3)" });
-    return () => {
-      animation.revert();
-    };
-  }, [value]);
-
-  return (
-    <div>
-      <div className="flex items-baseline justify-between text-[0.62rem] uppercase tracking-[0.2em] text-forge-muted">
-        <span>{label}</span>
-        <span className="font-display text-sm text-forge-ivory">{value}</span>
-      </div>
-      <div className="mt-2 h-[3px] w-full bg-forge-line">
-        <span
-          ref={barRef}
-          className="block h-full origin-left bg-forge-bronze"
-          style={{ width: `${Math.max(4, Math.min(100, value))}%` }}
-        />
-      </div>
-    </div>
-  );
 }
 
 export function StepWorld({
@@ -55,6 +26,8 @@ export function StepWorld({
   selectedProposal,
   texture,
   onTextureChange,
+  divisaId,
+  onDivisaChange,
   onSelectProposal,
   onStory,
   storyBusy,
@@ -65,14 +38,15 @@ export function StepWorld({
   if (!selectedProposal) {
     return (
       <div>
-        <p className="eyebrow">Paso 04 · Visor</p>
-        <h1 className="mt-4 font-display text-3xl text-forge-ivory">Todavía no hay un hierro que mirar</h1>
-        <p className="mt-4 text-sm text-forge-muted">Vuelve al paso anterior y forja tus propuestas para verlas en contexto.</p>
+        <p className="eyebrow">IV. Visor</p>
+        <h1 className="mt-3 font-display text-3xl text-forge-ink">Todavía no hay un hierro que mirar</h1>
+        <p className="mt-3 text-sm text-forge-graphite">Vuelve al paso anterior y forja tus propuestas para verlas sobre tus avíos.</p>
       </div>
     );
   }
 
   const meta = STYLE_META[selectedProposal.blueprint.style];
+  const activeDivisa = DIVISA_OPTIONS.find((item) => item.id === divisaId) ?? DIVISA_OPTIONS[0];
 
   const textureButton = (option: (typeof TEXTURE_OPTIONS)[number]) => {
     const active = texture === option.id;
@@ -83,30 +57,29 @@ export function StepWorld({
         role="tab"
         aria-selected={active}
         onClick={() => onTextureChange(option.id)}
-        className={`w-full border px-3.5 py-2 text-left transition ${
-          active ? "border-forge-bronze bg-forge-bronze/12" : "border-forge-line hover:border-forge-bronze/60"
+        className={`w-full rounded-[2px] border px-3.5 py-2 text-left transition ${
+          active ? "border-forge-grana bg-forge-white" : "border-forge-border bg-forge-stone/60 hover:border-forge-leather"
         }`}
       >
-        <span className={`block text-[0.7rem] font-semibold uppercase tracking-[0.14em] ${active ? "text-forge-ivory" : "text-forge-muted"}`}>
+        <span className={`block text-[0.7rem] font-semibold uppercase tracking-[0.12em] ${active ? "text-forge-grana" : "text-forge-ink"}`}>
           {option.label}
         </span>
-        <span className="mt-0.5 block text-[0.6rem] text-forge-muted/80">{option.hint}</span>
+        <span className="mt-0.5 block text-[0.65rem] text-forge-graphite">{option.hint}</span>
       </button>
     );
   };
 
   return (
     <div>
-      <p className="eyebrow">Paso 04 · Visor realista</p>
-      <h1 className="mt-4 font-display text-3xl leading-tight text-forge-ivory sm:text-4xl">Míralo en tu mundo</h1>
-      <p className="mt-4 max-w-2xl text-sm leading-relaxed text-forge-muted">
-        El mismo hierro sobre tres materiales. La vista se genera rasterizada con marca de agua: el archivo vectorial
-        limpio solo se entrega con el Pack Digital.
+      <p className="eyebrow">IV. Avíos y trastos</p>
+      <h1 className="mt-3 font-display text-3xl leading-tight text-forge-ink sm:text-4xl">Míralo en tu mundo</h1>
+      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-forge-graphite">
+        Prueba tu hierro sobre metal forjado, bordado de avíos y cuero quemado. Lámina de prueba rasterizada con marca de agua.
       </p>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <div>
-          <div role="tablist" aria-label="Texturas del visor">
+      <div className="mt-8 grid gap-8 lg:grid-cols-12 lg:items-start">
+        <div className="lg:sticky lg:top-24 lg:col-span-7">
+          <div role="tablist" aria-label="Avíos y soportes">
             {isMobile ? (
               <div className="overflow-hidden" ref={emblaRef}>
                 <div className="flex gap-2">
@@ -118,44 +91,134 @@ export function StepWorld({
                 </div>
               </div>
             ) : (
-              <div className="flex flex-wrap gap-2">{TEXTURE_OPTIONS.map((option) => textureButton(option))}</div>
+              <div className="grid grid-cols-3 gap-2">{TEXTURE_OPTIONS.map((option) => textureButton(option))}</div>
             )}
           </div>
 
-          <div className="mt-4">
-            <PreviewCanvas
-              previewUrl={selectedProposal.previewUrl}
-              texture={texture}
-              alt={`Hierro ${selectedProposal.blueprint.combo} sobre ${texture}`}
-            />
+          <div className="mt-4 border border-forge-border bg-forge-white p-1.5">
+            <TransformWrapper minScale={1} maxScale={3} initialScale={1} wheel={{ step: 0.2 }}>
+              {({ zoomIn, zoomOut, resetTransform }) => (
+                <div>
+                  <div className="flex items-center justify-between border-b border-forge-border bg-forge-paper px-3 py-2">
+                    <span className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-forge-graphite">
+                      Lupa de inspección
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => zoomIn()}
+                        aria-label="Acercar vista"
+                        className="inline-flex h-7 w-7 items-center justify-center border border-forge-border bg-forge-white text-forge-ink transition hover:border-forge-grana hover:text-forge-grana"
+                      >
+                        <ZoomIn className="h-3.5 w-3.5" aria-hidden />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => zoomOut()}
+                        aria-label="Alejar vista"
+                        className="inline-flex h-7 w-7 items-center justify-center border border-forge-border bg-forge-white text-forge-ink transition hover:border-forge-grana hover:text-forge-grana"
+                      >
+                        <ZoomOut className="h-3.5 w-3.5" aria-hidden />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => resetTransform()}
+                        aria-label="Restablecer zoom"
+                        className="inline-flex h-7 items-center gap-1 border border-forge-border bg-forge-white px-2 text-[0.6rem] font-semibold uppercase tracking-[0.1em] text-forge-ink transition hover:border-forge-grana hover:text-forge-grana"
+                      >
+                        <RotateCcw className="h-3 w-3" aria-hidden />
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+                  <div className="overflow-hidden border border-forge-border">
+                    <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
+                      <PreviewCanvas
+                        previewUrl={selectedProposal.previewUrl}
+                        texture={texture}
+                        alt={`Hierro ${selectedProposal.blueprint.combo} sobre ${texture}`}
+                      />
+                    </TransformComponent>
+                  </div>
+                </div>
+              )}
+            </TransformWrapper>
           </div>
 
-          <div className="mt-3 flex items-center gap-2 text-[0.62rem] uppercase tracking-[0.18em] text-forge-muted">
-            <Eye className="h-3.5 w-3.5 text-forge-bronze" aria-hidden />
-            Vista orientativa con marca de agua · mueve el dedo o el cursor para inclinar la luz
+          <div className="mt-3 flex items-center gap-2 text-xs text-forge-graphite">
+            <Eye className="h-3.5 w-3.5 shrink-0 text-forge-leather" aria-hidden />
+            Lámina de prueba con marca de agua · usa la lupa o arrastra para inspeccionar el trazo
           </div>
         </div>
 
-        <div className="flex flex-col gap-5">
-          <div className="border border-forge-line bg-forge-surface p-5">
-            <div className="flex items-baseline justify-between gap-3">
-              <h2 className="font-display text-lg tracking-wide text-forge-ivory">{meta.label}</h2>
-              <span className="numeral text-sm">{selectedProposal.blueprint.combo}</span>
+        <div className="flex flex-col gap-5 lg:col-span-5">
+          <article className="border border-forge-border bg-forge-white p-1.5">
+            <div className="border border-forge-border">
+              <header className="flex items-center justify-between border-b border-forge-border px-4 py-3">
+                <div>
+                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-forge-graphite">
+                    Ficha de hierro · {meta.label}
+                  </p>
+                  <h2 className="mt-0.5 font-display text-xl text-forge-ink">{selectedProposal.blueprint.combo}</h2>
+                </div>
+                <div className="flex items-center gap-2" aria-label={`Divisa ${activeDivisa.label}`}>
+                  <span className="text-[0.65rem] text-forge-graphite">{activeDivisa.label}</span>
+                  <div className="flex h-6 w-3.5 overflow-hidden border border-forge-border">
+                    <span className="flex-1" style={{ backgroundColor: activeDivisa.colors[0] }} />
+                    <span className="flex-1" style={{ backgroundColor: activeDivisa.colors[1] }} />
+                  </div>
+                </div>
+              </header>
+
+              <div className="p-4">
+                <p className="text-xs leading-relaxed text-forge-graphite">{selectedProposal.explanation}</p>
+              </div>
+
+              <dl className="grid grid-cols-3 divide-x divide-forge-border border-t border-forge-border text-center">
+                <div className="px-2 py-2.5">
+                  <dt className="text-[0.55rem] uppercase tracking-[0.14em] text-forge-graphite">Legibilidad</dt>
+                  <dd className="mt-0.5 font-display text-base text-forge-ink">{selectedProposal.scores.legibility}</dd>
+                </div>
+                <div className="px-2 py-2.5">
+                  <dt className="text-[0.55rem] uppercase tracking-[0.14em] text-forge-graphite">Equilibrio</dt>
+                  <dd className="mt-0.5 font-display text-base text-forge-ink">{selectedProposal.scores.balance}</dd>
+                </div>
+                <div className="px-2 py-2.5">
+                  <dt className="text-[0.55rem] uppercase tracking-[0.14em] text-forge-graphite">Forjable</dt>
+                  <dd className="mt-0.5 font-display text-base text-forge-grana">{selectedProposal.scores.forgeability}</dd>
+                </div>
+              </dl>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-forge-muted">{selectedProposal.explanation}</p>
-            <div className="mt-5 space-y-4">
-              <ScoreBar label="Legibilidad" value={selectedProposal.scores.legibility} />
-              <ScoreBar label="Equilibrio" value={selectedProposal.scores.balance} />
-              <ScoreBar label="Aptitud de forja" value={selectedProposal.scores.forgeability} />
+          </article>
+
+          <div className="border border-forge-border bg-forge-white p-4">
+            <p className="eyebrow-muted">Divisa de la casa</p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {DIVISA_OPTIONS.map((item) => {
+                const active = item.id === divisaId;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => onDivisaChange(item.id)}
+                    aria-pressed={active}
+                    className={`flex items-center gap-2.5 rounded-[2px] border px-3 py-2 text-left text-xs transition ${
+                      active ? "border-forge-grana bg-forge-paper text-forge-ink font-semibold" : "border-forge-border text-forge-graphite hover:border-forge-leather"
+                    }`}
+                  >
+                    <span className="flex h-4 w-3 shrink-0 overflow-hidden border border-forge-border" aria-hidden>
+                      <span className="flex-1" style={{ backgroundColor: item.colors[0] }} />
+                      <span className="flex-1" style={{ backgroundColor: item.colors[1] }} />
+                    </span>
+                    <span className="truncate">{item.label}</span>
+                  </button>
+                );
+              })}
             </div>
-            <p className="mt-4 text-[0.65rem] leading-relaxed text-forge-muted/80">
-              Puntuaciones orientativas calculadas sobre proporción, grosor mínimo y complejidad del remate. No sustituyen
-              una prueba física de forja.
-            </p>
           </div>
 
-          <div className="border border-forge-line bg-forge-surface p-5">
-            <p className="eyebrow-muted">Cambiar propuesta</p>
+          <div className="border border-forge-border bg-forge-white p-4">
+            <p className="eyebrow-muted">Cambiar lámina</p>
             <div className="mt-3 grid grid-cols-3 gap-2">
               {proposals.map((proposal, index) => {
                 const active = proposal.id === selectedProposal.id;
@@ -166,10 +229,10 @@ export function StepWorld({
                     onClick={() => onSelectProposal(proposal.id)}
                     aria-pressed={active}
                     aria-label={`Ver propuesta ${index + 1}`}
-                    className={`border bg-forge-void p-1.5 transition ${active ? "border-forge-bronze" : "border-forge-line hover:border-forge-bronze/60"}`}
+                    className={`rounded-[2px] border bg-forge-void p-1.5 transition ${active ? "border-forge-grana ring-1 ring-forge-grana" : "border-forge-border hover:border-forge-leather"}`}
                   >
                     <img src={proposal.previewUrl} alt="" width={160} height={160} className="h-20 w-full object-contain" />
-                    <span className="mt-1 block text-center text-[0.55rem] uppercase tracking-[0.16em] text-forge-muted">
+                    <span className="mt-1 block text-center text-[0.55rem] uppercase tracking-[0.16em] text-forge-paper">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                   </button>

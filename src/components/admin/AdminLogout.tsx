@@ -23,7 +23,7 @@ export function AdminLogout() {
       type="button"
       onClick={logout}
       disabled={busy}
-      className="inline-flex items-center gap-2 border border-forge-line px-3 py-2 text-[0.6rem] uppercase tracking-[0.18em] text-forge-muted transition hover:border-forge-bronze hover:text-forge-ivory disabled:opacity-50"
+      className="inline-flex items-center gap-2 border border-forge-border bg-forge-white px-3 py-2 text-[0.6rem] uppercase tracking-[0.16em] text-forge-graphite transition hover:border-forge-grana hover:text-forge-grana disabled:opacity-50"
     >
       <LogOut className="h-3.5 w-3.5" aria-hidden />
       Salir

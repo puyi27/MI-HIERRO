@@ -22,13 +22,9 @@ export function StepProfile({ draft, errors, onChange }: StepProfileProps) {
   return (
     <div>
       <p className="eyebrow">Paso 01 · Perfil y datos</p>
-      <h1 className="mt-4 font-display text-3xl leading-tight text-forge-ivory sm:text-4xl">Empecemos por tu nombre</h1>
-      <p className="mt-4 max-w-2xl text-sm leading-relaxed text-forge-muted">
-        Con tu nombre y apellidos generamos combinaciones de iniciales reales y las forjamos en cuatro estilos. Sin
-        registro previo: los datos solo se usan para componer tu propuesta.
-      </p>
+      <h1 className="mt-3 font-display text-2xl text-forge-ink sm:text-3xl">Empecemos por tu nombre</h1>
 
-      <fieldset className="mt-10">
+      <fieldset className="mt-8">
         <legend className="eyebrow-muted">¿Para quién forjamos?</legend>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           {PROFILE_TYPES.map((profile: ProfileType) => {
@@ -42,21 +38,21 @@ export function StepProfile({ draft, errors, onChange }: StepProfileProps) {
                 onClick={() => onChange({ profile })}
                 aria-pressed={selected}
                 data-selected={selected}
-                className="card-select grain relative overflow-hidden p-5"
+                className="card-select relative overflow-hidden p-5"
               >
                 <span className="flex items-center justify-between">
-                  <Icon className={`h-5 w-5 ${selected ? "text-forge-bronze" : "text-forge-muted"}`} aria-hidden />
-                  <span className={`h-2 w-2 rounded-full border ${selected ? "border-forge-bronze bg-forge-bronze" : "border-forge-line"}`} aria-hidden />
+                  <Icon className={`h-5 w-5 ${selected ? "text-forge-leather" : "text-forge-graphite"}`} aria-hidden />
+                  <span className={`h-2 w-2 rounded-full border ${selected ? "border-forge-leather bg-forge-leather" : "border-forge-border"}`} aria-hidden />
                 </span>
-                <span className="mt-4 block font-display text-lg tracking-wide text-forge-ivory">{meta.label}</span>
-                <span className="mt-2 block text-xs leading-relaxed text-forge-muted">{meta.description}</span>
+                <span className="mt-4 block font-display text-lg tracking-wide text-forge-ink">{meta.label}</span>
+                <span className="mt-2 block text-xs leading-relaxed text-forge-graphite">{meta.description}</span>
               </button>
             );
           })}
         </div>
       </fieldset>
 
-      <div className="mt-10 grid gap-5 sm:grid-cols-2">
+      <div className="mt-8 grid gap-5 sm:grid-cols-2">
         <Field
           id="firstName"
           label="Nombre"
@@ -147,17 +143,14 @@ export function StepProfile({ draft, errors, onChange }: StepProfileProps) {
         </fieldset>
       </div>
 
-      <div className="mt-8 flex items-start gap-3 border border-forge-line/70 bg-forge-surface/40 p-4 text-xs leading-relaxed text-forge-muted">
-        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-forge-bronze" aria-hidden />
-        <p>
-          La procedencia es opcional y solo se usa para personalizar la explicación del trazo. No publicamos tus datos ni
-          los vendemos.
-        </p>
+      <div className="mt-8 flex items-start gap-3 border border-forge-border bg-forge-stone p-4 text-xs leading-relaxed text-forge-graphite">
+        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-forge-leather" aria-hidden />
+        <p>La procedencia es opcional y solo se usa para personalizar la explicación del trazo.</p>
       </div>
 
       <LegalNotice variant="full" className="mt-6" />
 
-      <p className="mt-4 flex items-center gap-2 text-[0.68rem] uppercase tracking-[0.2em] text-forge-muted/80">
+      <p className="mt-4 flex items-center gap-2 text-[0.68rem] uppercase tracking-[0.12em] text-forge-graphite">
         <User className="h-3.5 w-3.5" aria-hidden />
         Sin registro · Sin tarjeta para empezar
       </p>

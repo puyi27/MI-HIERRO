@@ -22,5 +22,7 @@ export default async function ForjarPage({
   searchParams: Promise<{ perfil?: string; cancelado?: string }>;
 }) {
   const params = await searchParams;
-  return <ForgeWizard initialProfile={resolveProfile(params.perfil)} canceled={params.cancelado === "1"} />;
+  const profile = resolveProfile(params.perfil);
+  const key = `${profile}-${params.perfil ?? "default"}`;
+  return <ForgeWizard key={key} initialProfile={profile} canceled={params.cancelado === "1"} />;
 }

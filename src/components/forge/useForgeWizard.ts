@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   generateResponseSchema,
@@ -58,12 +58,34 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
   const [leadBusy, setLeadBusy] = useState(false);
   const [leadFeedback, setLeadFeedback] = useState<LeadFeedback | null>(null);
 
+  const previousProfileRef = useRef<ProfileType>(initialProfile);
+
   useEffect(() => {
+    if (previousProfileRef.current !== initialProfile) {
+      previousProfileRef.current = initialProfile;
+      setDraft(createDraft(initialProfile));
+      setErrors({});
+      setGenerateError(null);
+      setCheckoutFeedback(null);
+      setLeadFeedback(null);
+      setTexture("hierro");
+      try {
+        window.sessionStorage.removeItem(STORAGE_KEY);
+      } catch {
+        return;
+      }
+      setHydrated(true);
+      return;
+    }
+
     try {
       const stored = window.sessionStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored) as Partial<WizardDraft>;
-        if (parsed && typeof parsed.step === "number" && parsed.step >= 1 && parsed.step <= 5) {
+        if (parsed && parsed.profile && parsed.profile !== initialProfile) {
+          window.sessionStorage.removeItem(STORAGE_KEY);
+          setDraft(createDraft(initialProfile));
+        } else if (parsed && typeof parsed.step === "number" && parsed.step >= 1 && parsed.step <= 5) {
           setDraft({ ...createDraft(initialProfile), ...parsed });
         }
       }
@@ -132,6 +154,13 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
   const update = useCallback((patch: Partial<WizardDraft>) => {
     setDraft((previous) => {
       const next = { ...previous, ...patch };
+
+      if ("profile" in patch && patch.profile !== previous.profile) {
+        const fresh = createDraft(patch.profile!);
+        fresh.step = previous.step;
+        return fresh;
+      }
+
       const touchesIdentity = Object.keys(patch).some((key) => RESETTING_KEYS.includes(key as keyof WizardDraft));
       if (touchesIdentity) {
         next.proposals = [];
@@ -378,7 +407,7 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
     }
   };
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setDraft(createDraft(initialProfile));
     setErrors({});
     setGenerateError(null);
@@ -390,7 +419,7 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
     } catch {
       return;
     }
-  };
+  }, [initialProfile]);
 
   return {
     draft,

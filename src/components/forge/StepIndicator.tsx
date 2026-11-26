@@ -1,4 +1,10 @@
-import { STEP_LABELS } from "@/components/forge/types";
+const PROGRAM_STEPS = [
+  { roman: "I", label: "Perfil" },
+  { roman: "II", label: "Iniciales" },
+  { roman: "III", label: "Estilo" },
+  { roman: "IV", label: "Visor" },
+  { roman: "V", label: "Entrega" },
+] as const;
 
 interface StepIndicatorProps {
   current: number;
@@ -6,38 +12,29 @@ interface StepIndicatorProps {
 
 export function StepIndicator({ current }: StepIndicatorProps) {
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between">
-        <p className="eyebrow-muted">
-          Paso {String(current).padStart(2, "0")} de 05 · {STEP_LABELS[current - 1]}
-        </p>
-        <p className="hidden text-[0.62rem] uppercase tracking-[0.24em] text-forge-muted sm:block">MI HIERRO · Forja digital</p>
-      </div>
-      <ol className="mt-4 flex items-center gap-2" aria-label="Progreso del diseño">
-        {STEP_LABELS.map((label, index) => {
+    <nav aria-label="Programa de mano del taller" className="double-rule-y bg-forge-white py-3.5 px-4">
+      <ol className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 sm:justify-center sm:gap-x-8">
+        {PROGRAM_STEPS.map((item, index) => {
           const stepNumber = index + 1;
-          const state = stepNumber < current ? "done" : stepNumber === current ? "active" : "pending";
+          const active = stepNumber === current;
+          const done = stepNumber < current;
           return (
-            <li key={label} className="flex-1">
-              <span className="sr-only">{`Paso ${stepNumber}: ${label} (${state})`}</span>
+            <li key={item.roman} className="flex items-center gap-1.5">
               <span
-                aria-hidden
-                className={`block h-[3px] w-full transition ${
-                  state === "active" ? "bg-forge-bronze" : state === "done" ? "bg-forge-bronze/45" : "bg-forge-line"
-                }`}
-              />
-              <span
-                aria-hidden
-                className={`mt-2 hidden text-[0.58rem] uppercase tracking-[0.22em] sm:block ${
-                  state === "active" ? "text-forge-ivory" : "text-forge-muted/70"
+                className={`font-display text-xs tracking-[0.08em] transition sm:text-sm ${
+                  active
+                    ? "border-b-2 border-forge-gold pb-0.5 font-bold text-forge-grana"
+                    : done
+                      ? "text-forge-ink"
+                      : "text-forge-graphite/60"
                 }`}
               >
-                {label}
+                {item.roman}. {item.label}
               </span>
             </li>
           );
         })}
       </ol>
-    </div>
+    </nav>
   );
 }

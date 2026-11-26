@@ -14,8 +14,8 @@ export default function AlcanceRegistralPage() {
   return (
     <article className="mx-auto w-full max-w-3xl px-5 py-16 sm:px-8 sm:py-24">
       <p className="eyebrow">Transparencia</p>
-      <h1 className="mt-4 font-display text-3xl text-forge-ivory sm:text-4xl">Alcance registral del servicio</h1>
-      <p className="mt-4 text-sm leading-relaxed text-forge-muted">
+      <h1 className="mt-4 font-display text-3xl text-forge-ink sm:text-4xl">Alcance registral del servicio</h1>
+      <p className="mt-4 text-sm leading-relaxed text-forge-graphite">
         Crear un diseño, identificar una ganadería y registrar una marca son tres cosas distintas. Esta página explica
         exactamente dónde llega MI HIERRO y dónde empieza el trabajo de un profesional.
       </p>
@@ -96,7 +96,7 @@ export default function AlcanceRegistralPage() {
           Informe de Similitud y, cuando proceda, la revisión profesional de 49–99 €.
         </p>
         <p>
-          <Link href="/forjar" className="text-forge-bronze underline-offset-4 hover:underline">
+          <Link href="/forjar" className="text-forge-leather underline-offset-4 hover:underline">
             Volver a la fragua
           </Link>
         </p>

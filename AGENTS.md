@@ -6,17 +6,21 @@ Construir la Web App completa MI HIERRO (Next.js App Router + TypeScript estrict
 
 ## Dirección Visual Obligatoria
 
-Estética oscura forjada, mobile-first, inspirada en `docs/referencias/estilos-forja.jpeg`. Se descarta por completo el fondo marrón de cuero del prototipo antiguo: del prototipo solo se conservan la lógica de validaciones y los avisos legales.
+Estética editorial taurina y de imprenta clásica —inspirada en programas de mano de la Maestranza, libros registro RUCTL/ANCCE, guarnicionería artesanal y sastrería taurina— sobre papel cal cálido `#F7F3EA` alternado con bandas solemnes en Negro Azabache `#161412`. Mobile-first (390×844). Geometría de imprenta (`rounded-[2px]` o `rounded-none`), doble filete `#D6C9B4`, acentos de divisa en Grana Burladero `#6B141E` y Oro Albero `#B8832E`. Prohibidos `rounded-2xl`/`rounded-3xl`, degradados artificiales y sombras pesadas.
 
 | Token | Valor | Uso |
 | --- | --- | --- |
-| `--forge-void` | `#0C0B0A` | Fondo base |
-| `--forge-surface` | `#151311` | Superficies elevadas |
-| `--forge-line` | `#2B2622` | Bordes metálicos sutiles |
-| `--forge-bronze` | `#C89B63` | Acento bronce / hierro forjado |
-| `--forge-ivory` | `#F2E9DA` | Texto principal |
+| `--forge-paper` | `#F7F3EA` | Papel Cal · Fondo principal |
+| `--forge-white` | `#FFFDF9` | Blanco Cal · Tarjetas y fichas |
+| `--forge-stone` | `#EFE7D6` | Albero suave · Superficie secundaria |
+| `--forge-border` | `#D6C9B4` | Piedra / Filete · Bordes finos y dobles filetes |
+| `--forge-ink` | `#161412` | Negro Azabache · Tinta principal y bandas solemnes |
+| `--forge-graphite` | `#4E473F` | Grafito Cálido · Tinta secundaria |
+| `--forge-leather` | `#7D511E` | Bronce oscuro · Acento secundario (hover `#5E3C14`) |
+| `--forge-gold` | `#B8832E` | Oro Albero · Filetes nobles y divisas |
+| `--forge-grana` | `#6B141E` | Grana Burladero · Acento activo y divisas (hover `#530E16`) |
 
-Titulares en serif editorial (Cinzel), interfaz en sans limpia (Inter), acentos en cursiva editorial (Cormorant Garamond). Sin degradados llamativos, sin glassmorphism, sin emojis en la interfaz. Composición sobria, mucho aire, filetes finos, microtipografía en versalitas con tracking amplio.
+Titulares en serif editorial (Cinzel), interfaz en sans limpia (Inter), acentos en cursiva editorial (Cormorant Garamond). Fotografía real con corrección cromática uniforme (`.photo-editorial`). Textos concisos con vocabulario del sector (*Ficha de hierro*, *Avíos y trastos*, *Divisa*, *Lámina de prueba*): máximo 1 titular breve + 1-2 líneas de apoyo por sección.
 
 ## Reglas Técnicas Innegociables
 
@@ -25,7 +29,7 @@ Titulares en serif editorial (Cinzel), interfaz en sans limpia (Inter), acentos 
 3. NUNCA incluir claves API reales ni secretos en prompts o archivos versionados. Solo `.env.example` y `process.env`.
 4. El motor vectorial convierte iniciales con `opentype.js` (cero etiquetas `<text>` en el SVG maestro) y suelda piezas con `paper`.
 5. Aviso legal siempre visible: MI HIERRO propone y orienta; no certifica disponibilidad ante RUCTL, OEPM, EUIPO ni OMPI (referencia RD 787/2023).
-6. Estética oscura forjada obligatoria y diseño mobile-first (390x844).
+6. Estética editorial taurina clara obligatoria y diseño mobile-first (390x844).
 7. Resiliencia local: si faltan `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, `RESEND_API_KEY`, `UPSTASH_REDIS_REST_URL` o `DATABASE_URL`, se activan adaptadores de desarrollo seguros (fallback determinista, checkout simulado, correo registrado en `.data/mail.log`, rate limit en memoria y almacén de fichero local) sin romper ningún flujo.
 
 ## Stack

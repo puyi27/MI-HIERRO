@@ -63,7 +63,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0C0B0A",
+  themeColor: "#F6F2EA",
   width: "device-width",
   initialScale: 1,
 };
@@ -71,7 +71,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${cinzel.variable} ${cormorant.variable} ${inter.variable}`}>
-      <body className="min-h-screen bg-forge-void text-forge-ivory">
+      <body className="min-h-screen bg-forge-paper text-forge-ink">
         {children}
         <ForgeToaster />
       </body>

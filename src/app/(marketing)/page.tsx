@@ -1,12 +1,11 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
-import { ArrowRight, ArrowUpRight, Check } from "lucide-react";
-import { Emblem } from "@/components/brand/Emblem";
+import { ArrowRight, ArrowUpRight, Lock } from "lucide-react";
 import { StyleShowcase } from "@/components/marketing/StyleShowcase";
-import { HowItWorks } from "@/components/marketing/HowItWorks";
 import { PlanGrid } from "@/components/marketing/PlanGrid";
 import { LegalNotice } from "@/components/layout/LegalNotice";
-import { PROFILE_META, PROFILE_TYPES } from "@/types/forge";
+import { ForgeCompareSlider } from "@/components/marketing/ForgeCompareSlider";
 
 export const metadata: Metadata = {
   title: "Tu hierro, tu marca, tu legado",
@@ -15,157 +14,151 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const TRUST = ["3 propuestas gratuitas", "Sin registro obligatorio", "Vector forjable"];
+const PROFILES = [
+  { key: "novillero", label: "Novillero / Torero", image: "/images/perfil-novillero.jpg", href: "/forjar?perfil=novillero" },
+  { key: "ganaderia", label: "Ganadería", image: "/images/perfil-ganaderia.jpg", href: "/forjar?perfil=ganaderia" },
+  { key: "yeguada", label: "Yeguada PRE", image: "/images/perfil-yeguada.jpg", href: "/forjar?perfil=ganaderia" },
+  { key: "particular", label: "Finca / Particular", image: "/images/detalle-cuero.jpg", href: "/forjar?perfil=particular" },
+];
+
+const PROCESS_STEPS = [
+  { num: "I", title: "Filiación y perfil", body: "Sin registro. Solo tu nombre, apellidos y tipo de hierro." },
+  { num: "II", title: "Lámina de prueba", body: "Cuatro estirpes de trazo, tres propuestas con puntuaciones orientativas." },
+  { num: "III", title: "Avíos y entrega", body: "Míralo sobre hierro, capote y cuero. Descarga tu Story 9:16 gratis." },
+];
 
 export default function HomePage() {
   return (
     <>
-      <section className="relative overflow-hidden border-b border-forge-line">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-14 px-5 pb-16 pt-14 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:pb-24 lg:pt-20">
+      <section className="relative overflow-hidden border-b border-forge-border">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 pb-16 pt-14 sm:px-8 lg:grid-cols-[1fr_1.1fr] lg:pb-24 lg:pt-20">
           <div>
-            <p className="eyebrow">Heráldica ganadera · Forja digital</p>
-            <h1 className="mt-5 font-display text-[2.7rem] leading-[1.02] tracking-tight text-forge-ivory sm:text-6xl">
-              Tu hierro,
-              <br />
-              tu marca,
-              <br />
-              <span className="font-editorial italic text-forge-bronze">tu legado.</span>
+            <p className="eyebrow">Taller digital de hierros y marcas</p>
+            <h1 className="mt-4 font-display text-[2.5rem] leading-[1.05] tracking-tight text-forge-ink sm:text-5xl lg:text-[3.4rem]">
+              Tu hierro,{" "}
+              <span className="font-editorial italic text-forge-grana">tu legado.</span>
             </h1>
-            <p className="mt-6 max-w-xl text-sm leading-relaxed text-forge-muted sm:text-base">
-              Transformamos tu nombre, apellidos y procedencia en propuestas de hierro ganadero, marca personal de
-              novillero o emblema de yeguada. Cuatro estilos, tres propuestas y un visor que lo enseña en tu mundo.
+            <p className="mt-5 max-w-md text-base leading-relaxed text-forge-graphite">
+              Diseña tu hierro ganadero, marca de novillero o emblema de yeguada PRE en menos de un minuto. Gratis, sin registro.
             </p>
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/forjar" className="btn-primary">
-                Forjar mi hierro
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-              <Link href="#estilos" className="btn-ghost">
-                Ver los cuatro estilos
-              </Link>
-            </div>
-
-            <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-[0.68rem] uppercase tracking-[0.16em] text-forge-muted">
-              {TRUST.map((item) => (
-                <li key={item} className="flex items-center gap-2">
-                  <Check className="h-3.5 w-3.5 text-forge-bronze" aria-hidden />
-                  {item}
-                </li>
-              ))}
-            </ul>
+            <Link href="/forjar" className="btn-primary mt-8">
+              Forjar mi hierro
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+            <p className="mt-4 flex items-center gap-2 text-xs text-forge-graphite">
+              <Lock className="h-3.5 w-3.5 text-forge-leather" aria-hidden />
+              Tus bocetos son privados y no se publican en galerías abiertas.
+            </p>
           </div>
 
-          <div className="relative mx-auto w-full max-w-sm">
-            <div className="absolute inset-0 translate-x-3 translate-y-3 border border-forge-line" aria-hidden />
-            <div className="grain panel relative px-8 py-10 text-center">
-              <p className="eyebrow-muted">MI HIERRO · Pieza de referencia</p>
-              <Emblem className="mx-auto mt-8 h-40 w-40 text-forge-bronze" />
-              <p className="mt-8 font-display text-2xl tracking-[0.3em] text-forge-ivory">MI HIERRO</p>
-              <p className="mt-2 font-editorial text-base italic tracking-[0.08em] text-forge-muted">Forja tu legado</p>
-              <div className="rule my-6" />
-              <p className="text-[0.58rem] uppercase tracking-[0.24em] text-forge-muted/80">
-                Diseño orientativo · RD 787/2023
-              </p>
-            </div>
+          <div className="relative aspect-[4/3] w-full overflow-hidden border border-forge-border">
+            <Image
+              src="/images/hero-dehesa.jpg"
+              alt="Dehesa española al atardecer"
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 55vw"
+              className="photo-editorial object-cover object-[35%_center] scale-[1.08]"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+        <p className="eyebrow">¿Para quién forjamos?</p>
+        <h2 className="mt-3 font-display text-2xl text-forge-ink sm:text-3xl">Elige tu perfil y empieza</h2>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {PROFILES.map((p) => (
+            <Link
+              key={p.key}
+              href={p.href}
+              className="group relative overflow-hidden rounded-[2px] border border-forge-border bg-forge-white transition hover:border-forge-grana"
+            >
+              <div className="relative aspect-[3/4] w-full overflow-hidden">
+                <Image
+                  src={p.image}
+                  alt={p.label}
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 280px"
+                  className="photo-editorial object-cover transition duration-500 group-hover:scale-105"
+                />
+              </div>
+              <div className="flex items-center justify-between p-4">
+                <span className="font-display text-sm tracking-[0.06em] text-forge-ink">{p.label}</span>
+                <ArrowUpRight className="h-3.5 w-3.5 text-forge-graphite transition group-hover:text-forge-grana" aria-hidden />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y-2 border-forge-gold bg-forge-ink text-forge-paper">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1.1fr_1fr]">
+          <ForgeCompareSlider />
+          <div>
+            <p className="text-[0.66rem] font-semibold uppercase tracking-[0.24em] text-forge-gold">Oficio y proceso</p>
+            <h2 className="mt-3 font-display text-2xl text-forge-paper sm:text-3xl">Tres pasos, sin registro y sin tarjeta</h2>
+            <ol className="mt-8 space-y-6">
+              {PROCESS_STEPS.map((s) => (
+                <li key={s.num} className="flex gap-4 border-b border-forge-paper/15 pb-4 last:border-0 last:pb-0">
+                  <span className="font-display text-sm tracking-[0.08em] text-forge-gold">{s.num}.</span>
+                  <div>
+                    <p className="font-display text-base text-forge-paper">{s.title}</p>
+                    <p className="mt-1 text-sm text-forge-paper/75">{s.body}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
           </div>
         </div>
       </section>
 
       <section id="estilos" className="mx-auto w-full max-w-6xl scroll-mt-24 px-5 py-16 sm:px-8 sm:py-24">
-        <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
-          <div>
-            <p className="eyebrow">Los cuatro temples</p>
-            <h2 className="mt-4 font-display text-3xl leading-tight text-forge-ivory sm:text-4xl">
-              Cuatro estilos, una misma firma
-            </h2>
-          </div>
-          <p className="max-w-sm text-sm leading-relaxed text-forge-muted">
-            Del hierro histórico de la ganadería al monograma contemporáneo. Todos los estilos se compilan en una sola
-            silueta apta para forja y bordado.
-          </p>
-        </div>
-
+        <p className="eyebrow">Cuatro estirpes</p>
+        <h2 className="mt-3 font-display text-2xl text-forge-ink sm:text-3xl">Una misma firma, cuatro lecturas</h2>
         <div className="mt-10">
           <StyleShowcase />
         </div>
-
-        <div className="mt-8">
-          <Link href="/forjar" className="btn-ghost">
-            Probar con mis iniciales
-            <ArrowUpRight className="h-4 w-4" aria-hidden />
-          </Link>
-        </div>
+        <Link href="/forjar" className="btn-ghost mt-8">
+          Probar con mis iniciales
+          <ArrowUpRight className="h-4 w-4" aria-hidden />
+        </Link>
       </section>
 
-      <section className="border-y border-forge-line bg-forge-surface/30">
-        <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
-          <p className="eyebrow">Cómo se forja</p>
-          <h2 className="mt-4 max-w-2xl font-display text-3xl leading-tight text-forge-ivory sm:text-4xl">
-            Cinco pasos, sin registro y sin tarjeta
-          </h2>
-          <div className="mt-10">
-            <HowItWorks />
-          </div>
-          <LegalNotice className="mt-10" />
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-        <p className="eyebrow">Para quién forjamos</p>
-        <h2 className="mt-4 font-display text-3xl leading-tight text-forge-ivory sm:text-4xl">Tres oficios, tres hierros</h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {PROFILE_TYPES.map((profile) => {
-            const meta = PROFILE_META[profile];
-            return (
-              <Link
-                key={profile}
-                href={`/forjar?perfil=${profile}`}
-                className="panel group flex flex-col justify-between p-6 transition hover:border-forge-bronze/60"
-              >
-                <div>
-                  <p className="eyebrow-muted">{meta.short}</p>
-                  <h3 className="mt-3 font-display text-xl tracking-wide text-forge-ivory">{meta.label}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-forge-muted">{meta.description}</p>
-                </div>
-                <span className="mt-6 inline-flex items-center gap-2 text-[0.65rem] uppercase tracking-[0.2em] text-forge-bronze">
-                  Empezar
-                  <ArrowUpRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="border-t border-forge-line">
+      <section className="border-t border-forge-border bg-forge-stone/50">
         <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-          <p className="eyebrow">Planes</p>
-          <h2 className="mt-4 font-display text-3xl leading-tight text-forge-ivory sm:text-4xl">Empieza gratis, paga lo justo</h2>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-forge-muted">
-            La primera experiencia no cuesta nada. El archivo vectorial, el informe documental y la revisión profesional
-            son servicios independientes, sin suscripciones.
-          </p>
+          <p className="eyebrow">Pliego de encargos</p>
+          <h2 className="mt-3 font-display text-2xl text-forge-ink sm:text-3xl">Empieza gratis, paga lo justo</h2>
           <div className="mt-10">
             <PlanGrid />
           </div>
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-6xl px-5 pb-20 sm:px-8">
-        <div className="grain panel relative overflow-hidden px-6 py-14 text-center sm:px-12 sm:py-20">
-          <Emblem className="mx-auto h-16 w-16 text-forge-bronze" />
-          <h2 className="mt-8 font-display text-3xl leading-tight text-forge-ivory sm:text-5xl">
-            Tu nombre ya tiene <span className="font-editorial italic text-forge-bronze">forma.</span>
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-forge-muted">
-            Forja tres propuestas en menos de un minuto y míralas sobre hierro, capote y cuero antes de decidir.
-          </p>
-          <Link href="/forjar" className="btn-primary mt-8">
-            Forjar mi hierro
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
-          <LegalNotice className="mx-auto mt-10 max-w-2xl" />
+      <section className="mx-auto w-full max-w-6xl px-5 pb-20 pt-12 sm:px-8">
+        <div className="relative overflow-hidden border border-forge-border bg-forge-white p-1.5">
+          <div className="border border-forge-border px-6 py-12 text-center sm:px-12 sm:py-16">
+            <div className="relative mb-8 aspect-[21/9] w-full overflow-hidden border border-forge-border">
+              <Image
+                src="/images/hero-plaza.jpg"
+                alt="Plaza de tientas"
+                fill
+                sizes="(max-width: 1024px) 100vw, 1100px"
+                className="photo-editorial object-cover"
+              />
+            </div>
+            <h2 className="font-display text-2xl text-forge-ink sm:text-4xl">
+              Tu nombre ya tiene <span className="font-editorial italic text-forge-grana">forma.</span>
+            </h2>
+            <p className="mx-auto mt-3 max-w-md text-sm text-forge-graphite">
+              Tres propuestas en menos de un minuto. Míralas sobre hierro, capote y cuero antes de decidir.
+            </p>
+            <Link href="/forjar" className="btn-primary mt-8">
+              Forjar mi hierro
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+            <LegalNotice className="mx-auto mt-8 max-w-lg" />
+          </div>
         </div>
       </section>
     </>

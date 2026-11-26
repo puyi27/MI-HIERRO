@@ -37,7 +37,7 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
   } = wizard;
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-5 pb-24 pt-8 sm:px-8">
+    <div className="mx-auto w-full max-w-6xl px-5 pb-24 pt-8 sm:px-8">
       <StepIndicator current={draft.step} />
 
       <motion.div
@@ -52,7 +52,7 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
         {draft.step === 2 ? (
           <>
             {errors.combination ? (
-              <div role="alert" className="mb-6 flex gap-3 border border-[#6d3a2b] bg-[#251512] p-4 text-sm text-[#e6b4a1]">
+              <div role="alert" className="mb-6 flex gap-3 border border-forge-grana/40 bg-forge-grana/5 p-4 text-sm text-forge-grana">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 <p>{errors.combination}</p>
               </div>
@@ -77,6 +77,7 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
             selectedProposalId={selectedProposal?.id ?? null}
             onSelectProposal={wizard.selectProposal}
             initialsLabel={selectedCombination?.label ?? ""}
+            divisaId={draft.divisaId}
           />
         ) : null}
 
@@ -86,6 +87,8 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
             selectedProposal={selectedProposal}
             texture={texture}
             onTextureChange={setTexture}
+            divisaId={draft.divisaId}
+            onDivisaChange={(divisaId) => wizard.update({ divisaId })}
             onSelectProposal={wizard.selectProposal}
             onStory={wizard.downloadStory}
             storyBusy={storyBusy}
@@ -112,7 +115,7 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
         ) : null}
       </motion.div>
 
-      <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-forge-line pt-6">
+      <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-forge-border pt-6">
         <div>
           {draft.step > 1 ? (
             <button type="button" onClick={() => wizard.goToStep(draft.step - 1)} className="btn-ghost">
@@ -123,10 +126,10 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
             <button
               type="button"
               onClick={wizard.reset}
-              className="inline-flex items-center gap-2 text-[0.68rem] uppercase tracking-[0.18em] text-forge-muted transition hover:text-forge-ivory"
+              className="inline-flex items-center gap-2 text-[0.68rem] uppercase tracking-[0.12em] text-forge-graphite transition hover:text-forge-ink"
             >
               <RotateCcw className="h-3.5 w-3.5" aria-hidden />
-              Empezar de nuevo
+              Nuevo diseño
             </button>
           )}
         </div>
@@ -148,7 +151,7 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
 
           {draft.step === 3 ? (
             <button type="button" onClick={() => wizard.goToStep(4)} disabled={!selectedProposal} className="btn-primary">
-              Ver en el visor
+              Ver en avíos
               <ArrowRight className="h-4 w-4" aria-hidden />
             </button>
           ) : null}

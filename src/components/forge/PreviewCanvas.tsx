@@ -337,7 +337,7 @@ export function PreviewCanvas({ previewUrl, texture, alt }: PreviewCanvasProps) 
         className="forge-canvas"
       />
       {failed ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-forge-void/80 p-6 text-center text-sm text-forge-muted">
+        <div className="absolute inset-0 flex items-center justify-center bg-forge-void/85 p-6 text-center text-sm text-forge-paper">
           No hemos podido cargar la vista previa. Vuelve a forjar la propuesta.
         </div>
       ) : null}

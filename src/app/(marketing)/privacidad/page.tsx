@@ -11,14 +11,14 @@ export default function PrivacidadPage() {
   return (
     <article className="mx-auto w-full max-w-3xl px-5 py-16 sm:px-8 sm:py-24">
       <p className="eyebrow">Protección de datos</p>
-      <h1 className="mt-4 font-display text-3xl text-forge-ivory sm:text-4xl">Política de privacidad y RGPD</h1>
-      <p className="mt-3 text-xs uppercase tracking-[0.2em] text-forge-muted">Última actualización: noviembre de 2026</p>
+      <h1 className="mt-4 font-display text-3xl text-forge-ink sm:text-4xl">Política de privacidad y RGPD</h1>
+      <p className="mt-3 text-xs uppercase tracking-[0.2em] text-forge-graphite">Última actualización: noviembre de 2026</p>
 
       <LegalSection title="1. Responsable del tratamiento">
         <p>
           El responsable es el titular de MI HIERRO, cuyos datos identificativos completos se publicarán antes de la
           apertura comercial del servicio. Para cualquier cuestión de privacidad puedes escribir a{" "}
-          <a className="text-forge-bronze underline-offset-4 hover:underline" href="mailto:hola@mihierro.es">hola@mihierro.es</a>.
+          <a className="text-forge-leather underline-offset-4 hover:underline" href="mailto:hola@mihierro.es">hola@mihierro.es</a>.
         </p>
       </LegalSection>
 
@@ -87,7 +87,7 @@ export default function PrivacidadPage() {
         <p>
           Puedes ejercer los derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo
           a{" "}
-          <a className="text-forge-bronze underline-offset-4 hover:underline" href="mailto:hola@mihierro.es">hola@mihierro.es</a>,
+          <a className="text-forge-leather underline-offset-4 hover:underline" href="mailto:hola@mihierro.es">hola@mihierro.es</a>,
           indicando el derecho que deseas ejercer y acreditando tu identidad. También puedes retirar tu consentimiento en
           cualquier momento y presentar una reclamación ante la Agencia Española de Protección de Datos.
         </p>

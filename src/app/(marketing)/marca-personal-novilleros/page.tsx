@@ -1,6 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { StyleShowcase } from "@/components/marketing/StyleShowcase";
 import { HowItWorks } from "@/components/marketing/HowItWorks";
 import { PlanGrid } from "@/components/marketing/PlanGrid";
@@ -22,67 +23,49 @@ export const metadata: Metadata = {
 export default function NovilleroLanding() {
   return (
     <>
-      <section className="border-b border-forge-line">
-        <div className="mx-auto grid w-full max-w-6xl gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
+      <section className="border-b border-forge-border">
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
           <div>
             <p className="eyebrow">Para novilleros, toreros y cuadrillas</p>
-            <h1 className="mt-5 font-display text-[2.5rem] leading-[1.05] text-forge-ivory sm:text-5xl">
-              Una marca que se lea en el capote
-              <span className="font-editorial italic text-forge-bronze"> y en el cartel.</span>
+            <h1 className="mt-4 font-display text-[2.2rem] leading-[1.08] text-forge-ink sm:text-5xl">
+              Una marca que se lea en el capote{" "}
+              <span className="font-editorial italic text-forge-leather">y en el cartel.</span>
             </h1>
-            <p className="mt-6 max-w-xl text-sm leading-relaxed text-forge-muted sm:text-base">
-              Tu nombre es el activo. MI HIERRO lo convierte en monograma, hierro personal o emblema de cuadrilla con
-              lectura inmediata en bordado de capote, polo, faja y redes. Sin registro y sin tarjeta para empezar.
+            <p className="mt-5 max-w-xl text-sm leading-relaxed text-forge-graphite sm:text-base">
+              Tu nombre convertido en monograma o hierro personal con lectura inmediata en bordado, polo y redes. Sin registro.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/forjar?perfil=novillero" className="btn-primary">
-                Crear mi marca
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-              <Link href="#estilos" className="btn-ghost">Ver estilos</Link>
-            </div>
-            <LegalNotice className="mt-8" />
+            <Link href="/forjar?perfil=novillero" className="btn-primary mt-8">
+              Crear mi marca
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+            <LegalNotice className="mt-6" />
           </div>
 
-          <div className="panel grain p-7">
-            <div className="flex items-center gap-3">
-              <Star className="h-5 w-5 text-forge-bronze" aria-hidden />
-              <p className="eyebrow-muted">Pensado para el ruedo y la pantalla</p>
-            </div>
-            <ul className="mt-6 space-y-4 text-sm text-forge-muted">
-              <li>
-                <span className="block text-forge-ivory">Trazo legible a distancia</span>
-                Grosor mínimo controlado y remates limpios para que la marca aguante escala de cartel.
-              </li>
-              <li>
-                <span className="block text-forge-ivory">Bordado en capote y polo</span>
-                Verás la propuesta sobre tela antes de decidir, con textura de bordado real.
-              </li>
-              <li>
-                <span className="block text-forge-ivory">Story 9:16 gratuita</span>
-                Tarjeta vertical con tu hierro y la firma MI HIERRO, lista para Instagram o TikTok.
-              </li>
-              <li>
-                <span className="block text-forge-ivory">Pack Digital Premium</span>
-                SVG limpio, PNG 2400 px y kit de redes por 9,99 €, sin suscripción.
-              </li>
-            </ul>
+          <div className="relative aspect-[4/3] w-full overflow-hidden">
+            <Image
+              src="/images/perfil-novillero.jpg"
+              alt="Novillero en la plaza"
+              fill
+              sizes="(max-width: 1024px) 100vw, 45vw"
+              className="photo-editorial object-cover"
+            />
+            {/* detalle-capote como apoyo secundario */}
           </div>
         </div>
       </section>
 
       <section className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
         <p className="eyebrow">Cómo funciona</p>
-        <h2 className="mt-4 font-display text-3xl text-forge-ivory sm:text-4xl">Tu marca, forjada en cinco pasos</h2>
+        <h2 className="mt-3 font-display text-2xl text-forge-ink sm:text-3xl">Tu marca, forjada en cinco pasos</h2>
         <div className="mt-10">
           <HowItWorks />
         </div>
       </section>
 
-      <section id="estilos" className="scroll-mt-24 border-y border-forge-line bg-forge-surface/30">
+      <section id="estilos" className="scroll-mt-24 border-y border-forge-border bg-forge-stone">
         <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
           <p className="eyebrow">Estilos</p>
-          <h2 className="mt-4 font-display text-3xl text-forge-ivory sm:text-4xl">Del hierro clásico al monograma de autor</h2>
+          <h2 className="mt-3 font-display text-2xl text-forge-ink sm:text-3xl">Del hierro clásico al monograma de autor</h2>
           <div className="mt-10">
             <StyleShowcase />
           </div>
@@ -90,39 +73,34 @@ export default function NovilleroLanding() {
       </section>
 
       <section className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-        <h2 className="font-display text-3xl text-forge-ivory sm:text-4xl">Dudas habituales</h2>
+        <h2 className="font-display text-2xl text-forge-ink sm:text-3xl">Dudas habituales</h2>
         <div className="mt-8">
           <FaqList
             items={[
               {
                 question: "¿Puedo usar mi marca en carteles y redes?",
                 answer:
-                  "Sí. La Story gratuita está pensada para redes y el Pack Digital permite usar la imagen en soportes personales. Para usos comerciales o registrales, solicita una revisión profesional.",
-              },
-              {
-                question: "¿Qué diferencia hay con un logo genérico?",
-                answer:
-                  "La estética está construida sobre la tradición del hierro ganadero: proporción heráldica, remates de cruz o corona, lectura en bordado y una sola silueta forjable.",
+                  "Sí. La Story gratuita está pensada para redes y el Pack Digital permite usar la imagen en soportes personales.",
               },
               {
                 question: "¿Necesito registrar la marca?",
                 answer:
-                  "Crear un diseño no implica su registro ni garantiza exclusividad. MI HIERRO no certifica disponibilidad ante OEPM, EUIPO ni OMPI; si necesitas protección, consulta con un profesional.",
+                  "MI HIERRO no certifica disponibilidad ante OEPM, EUIPO ni OMPI. Para protección legal, consulta con un profesional.",
               },
               {
                 question: "¿Cuánto tarda la entrega del pack?",
                 answer:
-                  "El Pack Digital se entrega por enlace firmado inmediatamente después del pago confirmado, además por email. El enlace caduca a las 72 horas.",
+                  "El Pack Digital se entrega por enlace firmado tras el pago confirmado, además por email. El enlace caduca a las 72 h.",
               },
             ]}
           />
         </div>
       </section>
 
-      <section className="border-t border-forge-line">
+      <section className="border-t border-forge-border">
         <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
           <p className="eyebrow">Planes</p>
-          <h2 className="mt-4 font-display text-3xl text-forge-ivory sm:text-4xl">Empieza gratis</h2>
+          <h2 className="mt-3 font-display text-2xl text-forge-ink sm:text-3xl">Empieza gratis</h2>
           <div className="mt-10">
             <PlanGrid />
           </div>

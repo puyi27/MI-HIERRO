@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowUpRight, Check, CreditCard, Download, FileText, Hammer, Loader2, Shield } from "lucide-react";
+import { ArrowUpRight, Check, CreditCard, Download, FileText, Hammer, Loader2, Lock, Shield } from "lucide-react";
 import { LegalNotice } from "@/components/layout/LegalNotice";
 import { Field } from "@/components/ui/Field";
 import type { ForgeProposal, LeadRequest } from "@/types/forge";
@@ -65,36 +65,33 @@ export function StepDelivery({
 
   return (
     <div>
-      <p className="eyebrow">Paso 05 · Entrega</p>
-      <h1 className="mt-4 font-display text-3xl leading-tight text-forge-ivory sm:text-4xl">Llévate tu hierro</h1>
-      <p className="mt-4 max-w-2xl text-sm leading-relaxed text-forge-muted">
-        Empieza gratis con la Story 9:16. Si necesitas el archivo vectorial, el pack completo o una revisión profesional,
-        aquí tienes las opciones.
+      <p className="eyebrow">V. Pliego y entrega</p>
+      <h1 className="mt-3 font-display text-3xl leading-tight text-forge-ink sm:text-4xl">Llévate tu hierro</h1>
+      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-forge-graphite">
+        Descarga gratis la lámina Story 9:16 o solicita el pliego vectorial maestro para taller y bordado.
       </p>
 
       <div className="mt-8 grid gap-5 sm:grid-cols-[0.9fr_1.1fr]">
-        <div className="border border-forge-bronze/40 bg-forge-surface p-5">
+        <div className="border border-forge-border bg-forge-white p-5">
           <div className="flex items-center justify-between">
             <span className="eyebrow">Plan 0 €</span>
-            <span className="border border-forge-bronze/60 px-2 py-1 text-[0.55rem] uppercase tracking-[0.18em] text-forge-bronze">
+            <span className="border border-forge-border px-2 py-1 text-[0.58rem] uppercase tracking-[0.16em] text-forge-leather">
               Incluido
             </span>
           </div>
-          <p className="mt-4 font-display text-2xl text-forge-ivory">Story 9:16</p>
-          <p className="mt-2 text-xs leading-relaxed text-forge-muted">
-            Tarjeta vertical 1080x1920 con tu hierro, tu nombre y la firma MI HIERRO. Pensada para Instagram y TikTok.
+          <p className="mt-4 font-display text-2xl text-forge-ink">Lámina Story 9:16</p>
+          <p className="mt-2 text-xs leading-relaxed text-forge-graphite">
+            Tarjeta vertical 1080x1920 y avatar 1:1 con tu hierro, tu nombre y la firma discreta MI HIERRO.
           </p>
-          <ul className="mt-4 space-y-2 text-xs text-forge-muted">
+          <ul className="mt-4 space-y-2 text-xs text-forge-graphite">
             <li className="flex gap-2">
-              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-bronze" aria-hidden />Story 9:16 y avatar 1:1 con
-              firma MI HIERRO
+              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-leather" aria-hidden />Story 9:16 y avatar 1:1 con firma
             </li>
             <li className="flex gap-2">
-              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-bronze" aria-hidden />Marca de agua orientativa en
-              ambas piezas
+              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-leather" aria-hidden />Marca de agua orientativa
             </li>
             <li className="flex gap-2">
-              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-bronze" aria-hidden />Sin registro ni tarjeta
+              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-leather" aria-hidden />Sin registro ni tarjeta
             </li>
           </ul>
           <button type="button" onClick={onStory} disabled={storyBusy || avatarBusy || !proposal} className="btn-ghost mt-5 w-full">
@@ -107,10 +104,10 @@ export function StepDelivery({
           </button>
         </div>
 
-        <div className="border border-forge-line bg-forge-surface p-5">
+        <div className="border border-forge-border bg-forge-white p-5">
           <div className="flex items-center justify-between">
-            <span className="eyebrow-muted">Packs de pago</span>
-            <Shield className="h-4 w-4 text-forge-bronze" aria-hidden />
+            <span className="eyebrow-muted">Pliego vectorial y estudio</span>
+            <Shield className="h-4 w-4 text-forge-leather" aria-hidden />
           </div>
           <div className="mt-4">
             <Field
@@ -128,15 +125,15 @@ export function StepDelivery({
           </div>
 
           <div className="mt-5 grid gap-4">
-            <div className="border border-forge-line p-4">
+            <div className="border border-forge-border bg-forge-paper/50 p-4">
               <div className="flex items-baseline justify-between gap-3">
-                <p className="font-display text-lg text-forge-ivory">Pack Digital Premium</p>
-                <p className="font-display text-lg text-forge-bronze">9,99 €</p>
+                <p className="font-display text-lg text-forge-ink">Pack Digital Premium</p>
+                <p className="font-display text-lg text-forge-grana">9,99 €</p>
               </div>
-              <ul className="mt-3 space-y-1.5 text-xs text-forge-muted">
+              <ul className="mt-3 space-y-1.5 text-xs text-forge-graphite">
                 {PREMIUM_FEATURES.map((feature) => (
                   <li key={feature} className="flex gap-2">
-                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-bronze" aria-hidden />
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-leather" aria-hidden />
                     {feature}
                   </li>
                 ))}
@@ -152,15 +149,15 @@ export function StepDelivery({
               </button>
             </div>
 
-            <div className="border border-forge-line p-4">
+            <div className="border border-forge-border p-4">
               <div className="flex items-baseline justify-between gap-3">
-                <p className="font-display text-lg text-forge-ivory">Informe de Similitud</p>
-                <p className="font-display text-lg text-forge-bronze">19,90 €</p>
+                <p className="font-display text-lg text-forge-ink">Informe de Similitud</p>
+                <p className="font-display text-lg text-forge-leather">19,90 €</p>
               </div>
-              <ul className="mt-3 space-y-1.5 text-xs text-forge-muted">
+              <ul className="mt-3 space-y-1.5 text-xs text-forge-graphite">
                 {SIMILARITY_FEATURES.map((feature) => (
                   <li key={feature} className="flex gap-2">
-                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-bronze" aria-hidden />
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-forge-leather" aria-hidden />
                     {feature}
                   </li>
                 ))}
@@ -177,20 +174,24 @@ export function StepDelivery({
             </div>
           </div>
 
+          <p className="mt-3 text-[0.65rem] text-forge-graphite">
+            Pago seguro mediante Stripe (Tarjeta, Apple Pay, Google Pay y Bizum).
+          </p>
+
           {checkoutFeedback ? (
             <div
               role="status"
               className={`mt-4 border p-4 text-xs leading-relaxed ${
                 checkoutFeedback.kind === "success"
-                  ? "border-forge-bronze/60 bg-forge-bronze/10 text-forge-ivory"
-                  : "border-[#6d3a2b] bg-[#251512] text-[#e6b4a1]"
+                  ? "border-forge-gold bg-forge-stone text-forge-ink"
+                  : "border-forge-grana/50 bg-forge-grana/5 text-forge-grana"
               }`}
             >
               <p>{checkoutFeedback.message}</p>
               {checkoutFeedback.downloadUrl ? (
                 <a
                   href={checkoutFeedback.downloadUrl}
-                  className="mt-3 inline-flex items-center gap-2 font-semibold uppercase tracking-[0.16em] text-forge-bronze"
+                  className="mt-3 inline-flex items-center gap-2 font-semibold uppercase tracking-[0.14em] text-forge-grana underline underline-offset-2"
                 >
                   Abrir mi entrega
                   <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
@@ -201,17 +202,16 @@ export function StepDelivery({
         </div>
       </div>
 
-      <div className="mt-6 border border-forge-line bg-forge-surface/60 p-5">
+      <div className="mt-6 border border-forge-border bg-forge-stone p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="eyebrow-muted">Servicios profesionales</p>
-            <p className="mt-1 font-display text-xl text-forge-ivory">Revisión 49–99 € · Forja física</p>
+            <p className="mt-1 font-display text-xl text-forge-ink">Revisión 49–99 € · Forja física</p>
           </div>
-          <Hammer className="h-5 w-5 text-forge-bronze" aria-hidden />
+          <Hammer className="h-5 w-5 text-forge-leather" aria-hidden />
         </div>
-        <p className="mt-2 text-xs leading-relaxed text-forge-muted">
-          Adjuntamos tu diseño al expediente y te respondemos con alcance, presupuesto y plazo. La revisión profesional
-          valora similitudes y viabilidad antes de fabricar.
+        <p className="mt-2 text-xs leading-relaxed text-forge-graphite">
+          Adjuntamos tu diseño al expediente y te respondemos con alcance, presupuesto y plazo para acero inoxidable o bronce.
         </p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -224,9 +224,6 @@ export function StepDelivery({
             Encargar forja física
           </button>
         </div>
-        <p className="mt-3 text-[0.62rem] leading-relaxed text-forge-muted/80">
-          Se abre un cajón deslizable con el formulario. Adjuntamos automáticamente tu diseño al expediente.
-        </p>
       </div>
 
       <LeadDrawer
@@ -241,12 +238,12 @@ export function StepDelivery({
         feedback={leadFeedback}
       />
 
-      <LegalNotice variant="full" className="mt-6" />
+      <div className="mt-6 flex items-center gap-2 border-l-2 border-forge-grana pl-3 text-xs text-forge-graphite">
+        <Lock className="h-3.5 w-3.5 shrink-0 text-forge-leather" aria-hidden />
+        <span>Discreción absoluta: tus pruebas no se publican en galerías ni se ceden a terceros.</span>
+      </div>
 
-      <p className="mt-4 text-[0.65rem] leading-relaxed text-forge-muted/80">
-        Tarifas orientativas para validar el mercado, no precios comprometidos ni previsiones financieras. El Pack Digital
-        es un pago único sin suscripción. Los enlaces de descarga caducan a las 72 horas.
-      </p>
+      <LegalNotice variant="full" className="mt-4" />
     </div>
   );
 }
