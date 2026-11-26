@@ -1,0 +1,126 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ProfileType {
+  novillero
+  ganaderia
+  particular
+}
+
+enum ForgeStyle {
+  tradicional
+  monograma
+  geometrico
+  heraldico
+}
+
+enum OrderStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
+enum ProductType {
+  premium
+  similarity
+}
+
+enum LeadType {
+  revision
+  forja
+}
+
+enum RequestStatus {
+  pending
+  in_progress
+  delivered
+  cancelled
+}
+
+model Design {
+  id           String      @id @default(cuid())
+  profile      ProfileType
+  firstName    String
+  lastName1    String
+  lastName2    String?
+  origin       String?
+  character    String
+  remate       String
+  initials     String
+  style        ForgeStyle
+  blueprint    Json
+  svgMaster    String      @db.Text
+  previewKey   String?
+  scores       Json?
+  lore         String      @db.Text
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  orders       Order[]
+  reports      SimilarityReportRequest[]
+  leads        ForgeLead[]
+
+  @@index([createdAt])
+}
+
+model Order {
+  id                    String                  @id @default(cuid())
+  designId              String?
+  design                Design?                 @relation(fields: [designId], references: [id], onDelete: SetNull)
+  product               ProductType
+  amountCents           Int
+  currency              String                  @default("eur")
+  status                OrderStatus             @default(pending)
+  email                 String?
+  stripeSessionId       String?                 @unique
+  stripePaymentIntentId String?
+  downloadTokenId       String?
+  paidAt                DateTime?
+  metadata              Json?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  report                SimilarityReportRequest?
+
+  @@index([status, createdAt])
+}
+
+model SimilarityReportRequest {
+  id              String        @id @default(cuid())
+  designId        String?
+  design          Design?       @relation(fields: [designId], references: [id], onDelete: SetNull)
+  orderId         String?       @unique
+  order           Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  email           String
+  name            String?
+  status          RequestStatus @default(pending)
+  stripeSessionId String?       @unique
+  notes           String?       @db.Text
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status, createdAt])
+}
+
+model ForgeLead {
+  id        String        @id @default(cuid())
+  type      LeadType
+  name      String
+  email     String
+  phone     String?
+  message   String        @db.Text
+  budget    String?
+  designId  String?
+  design    Design?       @relation(fields: [designId], references: [id], onDelete: SetNull)
+  status    RequestStatus @default(pending)
+  createdAt DateTime      @default(now())
+
+  @@index([type, createdAt])
+}
