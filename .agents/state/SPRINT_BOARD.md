@@ -6,7 +6,7 @@ Orquestador: `forge-director`. Cada sprint se cierra solo con las cinco compuert
 
 - Implementación funcional de los sprints 0 a 6 completa en el repositorio y verificada de punta a punta.
 - G1: `npx tsc --noEmit` en verde y `npm run build` en verde con 30 rutas generadas.
-- G2: `npx vitest run` en verde, 12 archivos y 89 pruebas.
+- G2: `npx vitest run` en verde, 13 archivos y 95 pruebas.
 - G3: `/api/generate` sin `<svg>`, sin `d="M` ni `<text>` en las dos pasadas; `/api/preview` y `/api/story` solo PNG/WebP con marca de agua; sin secretos versionados (solo `.env.example`).
 - G4: cerrada en Chromium real a 390x844 y 1440x900. Recorrido completo de los cinco pasos, carrusel móvil con tres propuestas, cajones `vaul` de revisión y forja, tres texturas de canvas con digest distinto, Story 1080x1920, avatar 1080x1080, checkout 9,99 € y 19,90 €, login y descarga del SVG maestro en `/admin` y cambio de estado del informe a ENVIADO. 21/21 comprobaciones del arnés nuevo, 0 errores de consola, 0 errores de página y 0 fallos de red. Evidencia en `.data/g4/`, `.data/g4-report.json` y `.data/g4-sprint6.json`.
 - G5: revisión de código sin comentarios inline ni secretos y commit limpio.
@@ -33,6 +33,14 @@ Orquestador: `forge-director`. Cada sprint se cierra solo con las cinco compuert
 - `icon.tsx` y `opengraph-image.tsx` generan el emblema y la tarjeta 1200x630 con `ImageResponse`.
 - `/admin` protegido por cookie HMAC `HttpOnly` de 8 horas contra `ADMIN_PASSWORD`, con contraseña local de desarrollo cuando no está configurada. Lista pedidos, informes y leads; permite cambiar el estado del informe (`pending` → `in_progress` → `delivered`) y descargar el SVG maestro solo con sesión válida.
 - El perfil Novillero acepta apodo opcional, validado y persistido con el diseño, y se muestra en el paso de iniciales.
+
+## Cierre rápido · repositorio y scripts
+
+- `docs/` sale del índice de Git y entra en `.gitignore`; los PDFs y referencias siguen en disco local.
+- `package.json` incorpora `postinstall: prisma generate` y los scripts `db:migrate` y `db:studio` junto a `db:push`.
+- `/api/admin/login` mantiene la comparación en tiempo constante con `crypto.timingSafeEqual` y baja el límite a 5 intentos por ventana de 15 minutos.
+- `tests/admin.test.ts` cubre 401 sin cookie o con cookie manipulada, 429 al sexto intento, login válido con cookie `HttpOnly`, cambio de estado del informe y descarga del SVG maestro solo con sesión. Total: 95 pruebas en 13 archivos.
+- G1 `tsc --noEmit` y G2 Vitest reejecutados sobre el árbol final.
 
 ## Incidencias corregidas en G4
 

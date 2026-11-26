@@ -13,7 +13,7 @@ const loginSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const limit = await rateLimit(clientKey(request, "admin-login"), 8, 900);
+  const limit = await rateLimit(clientKey(request, "admin-login"), 5, 900);
   if (!limit.success) {
     return NextResponse.json({ error: "Demasiados intentos. Espera unos minutos." }, { status: 429, headers: NO_STORE });
   }
