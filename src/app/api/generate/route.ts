@@ -7,7 +7,7 @@ import {
   type ProfileType,
   type UseCaseKey,
 } from "@/types/forge";
-import { buildArtDirectionPrompt, generateBlueprints } from "@/lib/ai/gemini";
+import { ART_RECIPES, buildArtDirectionPrompt, buildVariantPrompts, generateBlueprints } from "@/lib/ai/gemini";
 import { RecraftError, generateRecraftRaster, hasRecraft, recraftStyleId } from "@/lib/ai/recraft";
 import { compileForge } from "@/lib/forge-engine/compiler";
 import { buildDeterministicBlueprints, explainBlueprint } from "@/lib/forge-engine/presets";
@@ -32,27 +32,6 @@ const DEFAULT_USE: Record<ProfileType, UseCaseKey> = {
   ganaderia: "fuego",
   particular: "piel",
 };
-
-const RASTER_VARIANTS = [
-  {
-    suffix:
-      "Composition variant: one classic centred lock-up, both initials sharing a single vertical axis and a strictly symmetrical silhouette.",
-    description:
-      "Clásico centrado: las dos iniciales comparten un mismo eje vertical y la silueta queda simétrica, con el trazo de pletina continuo.",
-  },
-  {
-    suffix:
-      "Composition variant: vertically interlocked initials, one continuous welded stroke joining both letters, a clean open counter between them.",
-    description:
-      "Enlazado vertical: un solo trazo suelda las iniciales y deja abierto el hueco interior para que el bordado respire.",
-  },
-  {
-    suffix:
-      "Composition variant: crowned forge finish, an open arch ornament welded above the initials and the terminal ends cut as forged spurs.",
-    description:
-      "Remate forjado: el cuerpo central se corona con un arco abierto y los extremos se rematan en espuela de forja.",
-  },
-] as const;
 
 function resolveUse(input: GenerateRequest): UseCaseKey {
   return input.use ?? DEFAULT_USE[input.profile.profile];
@@ -142,10 +121,20 @@ async function rasterProposals(input: GenerateRequest, use: UseCaseKey, store: F
     notes: input.notes,
   });
 
+  const recipes = ART_RECIPES[input.style];
+  const generationKey = generationKeyFor(input, use);
+  const prompts = buildVariantPrompts(direction.prompt, input.style);
+
+  if (process.env.NODE_ENV !== "production") {
+    prompts.forEach((prompt, index) => {
+      console.info(`[art-direction] ${generationKey} · variante ${index + 1} (${recipes[index].key})\n${prompt}`);
+    });
+  }
+
   const batches = await Promise.all(
-    RASTER_VARIANTS.map((variant) =>
+    prompts.map((prompt) =>
       generateRecraftRaster({
-        prompt: `${direction.prompt} ${variant.suffix}`,
+        prompt,
         styleId,
         count: 1,
       }),
@@ -154,11 +143,10 @@ async function rasterProposals(input: GenerateRequest, use: UseCaseKey, store: F
   const rasters = batches.map((batch) => batch[0]);
 
   const blueprints = buildDeterministicBlueprints(input.profile, input.initials, input.style);
-  const generationKey = generationKeyFor(input, use);
   const proposals: ForgeProposal[] = [];
 
   for (let index = 0; index < blueprints.length && index < rasters.length; index += 1) {
-    const forged = { ...blueprints[index], lore: RASTER_VARIANTS[index].description };
+    const forged = { ...blueprints[index], lore: recipes[index].description };
     let compiled;
     try {
       compiled = compileForge(forged, input.initials);

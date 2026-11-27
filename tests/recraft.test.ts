@@ -27,7 +27,8 @@ delete process.env.UPSTASH_REDIS_REST_TOKEN;
 
 const { POST: generatePost } = await import("@/app/api/generate/route");
 const { GET: previewGet } = await import("@/app/api/preview/route");
-const { buildArtDirectionPrompt } = await import("@/lib/ai/gemini");
+const { ART_RECIPES, buildArtDirectionPrompt, buildDeterministicArtPrompt, buildVariantPrompts, sanitizeArtPrompt } =
+  await import("@/lib/ai/gemini");
 const { buildTransparentMask, generateRecraftRaster, vectorizeRecraftImage } = await import("@/lib/ai/recraft");
 const { resetMemoryRateLimit } = await import("@/lib/security/rate-limit");
 
@@ -165,6 +166,80 @@ describe("Director de Arte · prompt técnico", () => {
     expect(direction.prompt).toMatch(/no gradients/i);
     expect(direction.prompt).toContain("J G");
     expect(direction.prompt).not.toContain("<");
+    expect(direction.prompt.toLowerCase()).not.toContain("serif");
+    expect(direction.prompt.toLowerCase()).not.toContain("luxury");
+    expect(direction.prompt.toLowerCase()).toContain("no floating points");
+  });
+});
+
+describe("Recetas morfológicas · física de forja", () => {
+  const base = buildDeterministicArtPrompt({
+    profile,
+    initials,
+    style: "tradicional",
+    use: "fuego",
+    notes: "Puerta de finca en Salamanca",
+  });
+
+  it("prohíbe palabras de lujo y exige pletina monoline en tradicional, monograma y geométrico", () => {
+    for (const style of ["tradicional", "monograma", "geometrico"] as const) {
+      const prompts = buildVariantPrompts(base, style);
+      expect(prompts).toHaveLength(3);
+      expect(new Set(prompts).size).toBe(3);
+      for (const prompt of prompts) {
+        const lower = prompt.toLowerCase();
+        expect(lower).not.toContain("crown");
+        expect(lower).not.toContain("luxury");
+        expect(lower).not.toContain("serif");
+        expect(lower).not.toContain("gold");
+        expect(lower).not.toContain("crest");
+        expect(lower).toContain("uniform monoline");
+        expect(lower).toContain("wrought-iron");
+      }
+    }
+  });
+
+  it("reserva el remate almenado de forja para el estilo heráldico", () => {
+    const heraldic = buildVariantPrompts(base, "heraldico");
+    expect(heraldic[2]).toContain("merlons");
+    expect(heraldic[2].toLowerCase()).toContain("crenellated");
+    expect(heraldic.join(" ").toLowerCase()).not.toContain("luxury");
+    expect(heraldic.join(" ").toLowerCase()).toContain("no floating points");
+  });
+
+  it("da una receta y una descripción propias a cada una de las doce propuestas", () => {
+    const descriptions = new Set<string>();
+    for (const style of ["tradicional", "monograma", "geometrico", "heraldico"] as const) {
+      expect(ART_RECIPES[style]).toHaveLength(3);
+      for (const recipe of ART_RECIPES[style]) {
+        expect(recipe.description.length).toBeGreaterThan(40);
+        expect(recipe.description).not.toContain("se corona");
+        expect(descriptions.has(recipe.description)).toBe(false);
+        descriptions.add(recipe.description);
+      }
+    }
+    expect(descriptions.size).toBe(12);
+  });
+
+  it("sanea el prompt cuando Gemini o el cliente cuelan palabras de lujo", () => {
+    const dirty =
+      "A luxury royal gold crown crest badge for a matador, ornate serif lettering with embroidery on a boutique jacket.";
+    const clean = sanitizeArtPrompt(dirty, "tradicional").toLowerCase();
+    for (const word of [
+      "luxury",
+      "royal",
+      "gold",
+      "crown",
+      "crest",
+      "badge",
+      "matador",
+      "serif",
+      "ornate",
+      "embroidery",
+      "boutique",
+    ]) {
+      expect(clean).not.toContain(word);
+    }
   });
 });
 
