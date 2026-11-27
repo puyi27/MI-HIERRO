@@ -76,6 +76,8 @@ export const fileStore: ForgeStore = {
         style: input.style,
         blueprint: input.blueprint,
         svgMaster: input.svgMaster,
+        rasterPng: input.rasterPng ?? null,
+        generationKey: input.generationKey ?? null,
         previewKey: null,
         scores: input.scores,
         lore: input.lore,
@@ -89,6 +91,11 @@ export const fileStore: ForgeStore = {
   async getDesign(id: string) {
     const database = await readDatabase();
     return database.designs.find((design) => design.id === id) ?? null;
+  },
+
+  async findGeneration(key: string) {
+    const database = await readDatabase();
+    return database.designs.filter((design) => design.generationKey === key).slice(0, 3);
   },
 
   async createOrder(input: CreateOrderInput) {

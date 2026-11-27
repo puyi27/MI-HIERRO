@@ -2,38 +2,128 @@ import sharp from "sharp";
 import { extractPathData } from "@/lib/forge-engine/compiler";
 import { textToPath } from "@/lib/forge-engine/text-path";
 import type { DesignRecord } from "@/lib/store/types";
+import type { PreviewTexture } from "@/types/forge";
 
-type TextureKey = "hierro" | "bordado" | "cuero";
+type StorySurface = "hierro" | "bordado" | "cuero";
 
 interface TextureTheme {
+  surface: StorySurface;
   backgroundTop: string;
   backgroundBottom: string;
   glow: string;
   accent: string;
   pattern: string;
+  hint: string;
 }
 
-const TEXTURES: Record<TextureKey, TextureTheme> = {
+const THEMES: Record<PreviewTexture, TextureTheme> = {
   hierro: {
+    surface: "hierro",
     backgroundTop: "#0C0B0A",
     backgroundBottom: "#151311",
     glow: "#C89B63",
     accent: "#C89B63",
     pattern: `<pattern id="grain-lines" width="26" height="26" patternUnits="userSpaceOnUse" patternTransform="rotate(38)"><path d="M0 0 L0 26" stroke="#F2E9DA" stroke-opacity="0.035" stroke-width="2"/></pattern>`,
+    hint: "HIERRO FORJADO NEGRO",
   },
   bordado: {
+    surface: "bordado",
     backgroundTop: "#0B0D10",
     backgroundBottom: "#141A20",
     glow: "#8FA6B8",
     accent: "#C89B63",
     pattern: `<pattern id="weave" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M0 0 H18" stroke="#F2E9DA" stroke-opacity="0.06" stroke-width="1.5"/><path d="M0 0 V18" stroke="#F2E9DA" stroke-opacity="0.04" stroke-width="1.5"/></pattern>`,
+    hint: "BORDADO SOBRE CAPOTE Y POLO",
   },
   cuero: {
+    surface: "cuero",
     backgroundTop: "#150F0A",
     backgroundBottom: "#241812",
     glow: "#C89B63",
     accent: "#C89B63",
     pattern: `<pattern id="grain" width="42" height="42" patternUnits="userSpaceOnUse"><path d="M6 18 Q16 10 26 20 T44 22" stroke="#C89B63" stroke-opacity="0.08" stroke-width="1.4" fill="none"/></pattern>`,
+    hint: "GRABADO EN CUERO Y MADERA QUEMADA",
+  },
+  capote: {
+    surface: "bordado",
+    backgroundTop: "#2A070B",
+    backgroundBottom: "#460E15",
+    glow: "#C89B63",
+    accent: "#E2BA64",
+    pattern: `<pattern id="weave" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M0 0 H16" stroke="#F2E9DA" stroke-opacity="0.06" stroke-width="1.2"/><path d="M0 0 V16" stroke="#F2E9DA" stroke-opacity="0.04" stroke-width="1.2"/></pattern>`,
+    hint: "BORDADO EN HILO DE ORO · CAPOTE",
+  },
+  esporton: {
+    surface: "cuero",
+    backgroundTop: "#1B0F08",
+    backgroundBottom: "#2C190E",
+    glow: "#C89B63",
+    accent: "#D9A868",
+    pattern: `<pattern id="grain" width="42" height="42" patternUnits="userSpaceOnUse"><path d="M6 18 Q16 10 26 20 T44 22" stroke="#C89B63" stroke-opacity="0.08" stroke-width="1.4" fill="none"/></pattern>`,
+    hint: "ESPORTÓN DE PIEL · GUARNICIONERÍA",
+  },
+  fundon: {
+    surface: "cuero",
+    backgroundTop: "#1D0B0B",
+    backgroundBottom: "#2F1213",
+    glow: "#C89B63",
+    accent: "#E2BA64",
+    pattern: `<pattern id="grain" width="42" height="42" patternUnits="userSpaceOnUse"><path d="M6 18 Q16 10 26 20 T44 22" stroke="#C89B63" stroke-opacity="0.08" stroke-width="1.4" fill="none"/></pattern>`,
+    hint: "FUNDÓN DE ESPADAS · TAFILETE",
+  },
+  maleta: {
+    surface: "cuero",
+    backgroundTop: "#140D09",
+    backgroundBottom: "#21150E",
+    glow: "#C89B63",
+    accent: "#D9A868",
+    pattern: `<pattern id="grain" width="42" height="42" patternUnits="userSpaceOnUse"><path d="M6 18 Q16 10 26 20 T44 22" stroke="#C89B63" stroke-opacity="0.08" stroke-width="1.4" fill="none"/></pattern>`,
+    hint: "MALETA DEL MOZO DE ESPADAS",
+  },
+  avatar: {
+    surface: "hierro",
+    backgroundTop: "#11100E",
+    backgroundBottom: "#1A1714",
+    glow: "#C89B63",
+    accent: "#C89B63",
+    pattern: `<pattern id="grain-lines" width="26" height="26" patternUnits="userSpaceOnUse" patternTransform="rotate(38)"><path d="M0 0 L0 26" stroke="#F2E9DA" stroke-opacity="0.035" stroke-width="2"/></pattern>`,
+    hint: "SELLO DIGITAL Y AVATAR DE REDES",
+  },
+  fragua: {
+    surface: "hierro",
+    backgroundTop: "#0E0B09",
+    backgroundBottom: "#1C130E",
+    glow: "#E0873E",
+    accent: "#E2A65C",
+    pattern: `<pattern id="grain-lines" width="26" height="26" patternUnits="userSpaceOnUse" patternTransform="rotate(38)"><path d="M0 0 L0 26" stroke="#F2E9DA" stroke-opacity="0.035" stroke-width="2"/></pattern>`,
+    hint: "HIERRO FORJADO EN FRAGUA",
+  },
+  montura: {
+    surface: "cuero",
+    backgroundTop: "#191009",
+    backgroundBottom: "#2A1A0E",
+    glow: "#C89B63",
+    accent: "#DFAD6E",
+    pattern: `<pattern id="grain" width="42" height="42" patternUnits="userSpaceOnUse"><path d="M6 18 Q16 10 26 20 T44 22" stroke="#C89B63" stroke-opacity="0.08" stroke-width="1.4" fill="none"/></pattern>`,
+    hint: "MONTURA Y CUERO VAQUERO",
+  },
+  cancela: {
+    surface: "hierro",
+    backgroundTop: "#12100E",
+    backgroundBottom: "#1B1814",
+    glow: "#C89B63",
+    accent: "#C89B63",
+    pattern: `<pattern id="grain-lines" width="26" height="26" patternUnits="userSpaceOnUse" patternTransform="rotate(38)"><path d="M0 0 L0 26" stroke="#F2E9DA" stroke-opacity="0.035" stroke-width="2"/></pattern>`,
+    hint: "CANCELA DE FINCA Y PORTÓN",
+  },
+  polo: {
+    surface: "bordado",
+    backgroundTop: "#121417",
+    backgroundBottom: "#1E2228",
+    glow: "#C89B63",
+    accent: "#D9AE68",
+    pattern: `<pattern id="weave" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M0 0 H18" stroke="#F2E9DA" stroke-opacity="0.06" stroke-width="1.5"/><path d="M0 0 V18" stroke="#F2E9DA" stroke-opacity="0.04" stroke-width="1.5"/></pattern>`,
+    hint: "BORDADO EN POLO DE CAMPO",
   },
 };
 
@@ -54,9 +144,10 @@ function centeredText(
   return `<g transform="translate(${dx.toFixed(2)} ${baselineY}) scale(${scale.toFixed(3)})"><path d="${path.pathData}" fill="${fill}" fill-opacity="${opacity}"/></g>`;
 }
 
-function baseSvg(width: number, height: number, texture: TextureKey, body: string): string {
-  const theme = TEXTURES[texture];
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+function baseSvg(width: number, height: number, texture: PreviewTexture, body: string): string {
+  const theme = THEMES[texture];
+  const patternId = theme.surface === "bordado" ? "weave" : theme.surface === "cuero" ? "grain" : "grain-lines";
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0.3" y2="1">
       <stop offset="0%" stop-color="${theme.backgroundTop}"/>
@@ -72,7 +163,7 @@ function baseSvg(width: number, height: number, texture: TextureKey, body: strin
   </defs>
   <rect width="${width}" height="${height}" fill="url(#bg)"/>
   <rect width="${width}" height="${height}" fill="url(#glow)"/>
-  <rect width="${width}" height="${height}" fill="url(#${texture === "bordado" ? "weave" : texture === "cuero" ? "grain" : "grain-lines"})"/>
+  <rect width="${width}" height="${height}" fill="url(#${patternId})"/>
   ${body}
 </svg>`;
 }
@@ -103,28 +194,50 @@ function legalMicrocopy(centerX: number, baselineY: number, width: number): stri
   </g>`;
 }
 
-function logoBlock(design: DesignRecord, size: number, centerX: number, topY: number): string {
-  const pathData = extractPathData(design.svgMaster);
+async function tintGoldMask(maskBase64: string, size: number): Promise<string> {
+  const { data, info } = await sharp(Buffer.from(maskBase64, "base64"))
+    .ensureAlpha()
+    .resize({ width: size, height: size, fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const tinted = Buffer.alloc(info.width * info.height * 4);
+  for (let i = 0; i < info.width * info.height; i += 1) {
+    const idx = i * 4;
+    const alpha = data[idx + 3];
+    if (alpha === 0) continue;
+    tinted[idx] = 216;
+    tinted[idx + 1] = 169;
+    tinted[idx + 2] = 94;
+    tinted[idx + 3] = alpha;
+  }
+
+  const out = await sharp(tinted, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+  return out.toString("base64");
+}
+
+async function logoBlock(design: DesignRecord, size: number, centerX: number, topY: number): Promise<string> {
   const scale = size / 300;
   const x = centerX - size / 2;
+  if (design.rasterPng) {
+    const goldBase64 = await tintGoldMask(design.rasterPng, size);
+    return `<image href="data:image/png;base64,${goldBase64}" xlink:href="data:image/png;base64,${goldBase64}" x="${x.toFixed(2)}" y="${topY}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet"/>`;
+  }
+  const pathData = extractPathData(design.svgMaster);
   return `<g transform="translate(${x.toFixed(2)} ${topY}) scale(${scale.toFixed(3)})"><path d="${pathData}" fill="#C89B63" fill-rule="evenodd"/></g>`;
 }
 
-function textureHint(texture: TextureKey): string {
-  if (texture === "bordado") return "BORDADO SOBRE CAPOTE Y POLO";
-  if (texture === "cuero") return "GRABADO EN CUERO Y MADERA QUEMADA";
-  return "HIERRO FORJADO NEGRO";
-}
-
-export async function renderStoryCard(design: DesignRecord, texture: TextureKey): Promise<Buffer> {
+export async function renderStoryCard(design: DesignRecord, texture: PreviewTexture): Promise<Buffer> {
   const width = 1080;
   const height = 1920;
   const centerX = width / 2;
+  const theme = THEMES[texture];
+  const logo = await logoBlock(design, 420, centerX, 400);
   const body = `
     <rect x="56" y="56" width="${width - 112}" height="${height - 112}" fill="none" stroke="#2B2622" stroke-width="2"/>
     <rect x="72" y="72" width="${width - 144}" height="${height - 144}" fill="none" stroke="#C89B63" stroke-opacity="0.18" stroke-width="1"/>
-    ${centeredText(textureHint(texture), "inter", 13, 0.34, centerX, 190, "#C89B63", 820, 0.85)}
-    ${logoBlock(design, 420, centerX, 400)}
+    ${centeredText(theme.hint, "inter", 13, 0.34, centerX, 190, theme.accent, 820, 0.85)}
+    ${logo}
     ${clientName(design, centerX, 980, 900)}
     ${centeredText(
       [design.origin ? design.origin.toUpperCase() : "", design.style.toUpperCase()].filter(Boolean).join(" · "),
@@ -147,7 +260,7 @@ export async function renderStoryCard(design: DesignRecord, texture: TextureKey)
 
 export async function renderAvatar(
   design: DesignRecord,
-  texture: TextureKey = "hierro",
+  texture: PreviewTexture = "hierro",
   watermark = false,
 ): Promise<Buffer> {
   const size = 1080;
@@ -157,9 +270,10 @@ export async function renderAvatar(
     ? `<g transform="translate(${centerX} 500) rotate(-24) translate(${-mark.width / 2} 0)" opacity="0.1"><path d="${mark.pathData}" fill="#F2E9DA"/></g>
        <g transform="translate(${centerX} 760) rotate(-24) translate(${-mark.width / 2} 0)" opacity="0.08"><path d="${mark.pathData}" fill="#F2E9DA"/></g>`
     : "";
+  const logo = await logoBlock(design, 560, centerX, 250);
   const body = `
     <rect x="44" y="44" width="${size - 88}" height="${size - 88}" fill="none" stroke="#2B2622" stroke-width="2"/>
-    ${logoBlock(design, 560, centerX, 250)}
+    ${logo}
     ${diagonal}
     ${brandSignature(centerX, 908, 0.9)}
   `;

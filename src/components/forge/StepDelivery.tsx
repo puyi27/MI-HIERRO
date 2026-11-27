@@ -5,7 +5,7 @@ import { ArrowUpRight, Check, CreditCard, Download, FileText, Hammer, Loader2, L
 import { LegalNotice } from "@/components/layout/LegalNotice";
 import { Field } from "@/components/ui/Field";
 import type { ForgeProposal, LeadRequest } from "@/types/forge";
-import type { CheckoutFeedback, LeadFeedback, WizardDraft } from "@/components/forge/types";
+import type { CheckoutFeedback, DemoPackMode, LeadFeedback, WizardDraft } from "@/components/forge/types";
 import { LeadDrawer } from "@/components/forge/LeadDrawer";
 
 interface StepDeliveryProps {
@@ -23,6 +23,7 @@ interface StepDeliveryProps {
   onLead: (payload: LeadRequest) => void;
   leadBusy: boolean;
   leadFeedback: LeadFeedback | null;
+  demoMode?: DemoPackMode;
 }
 
 const PREMIUM_FEATURES = [
@@ -54,6 +55,7 @@ export function StepDelivery({
   onLead,
   leadBusy,
   leadFeedback,
+  demoMode = "free",
 }: StepDeliveryProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [leadType, setLeadType] = useState<"revision" | "forja">("revision");
@@ -125,11 +127,20 @@ export function StepDelivery({
           </div>
 
           <div className="mt-5 grid gap-4">
-            <div className="border border-forge-border bg-forge-paper/50 p-4">
+            <div
+              className={`border p-4 ${
+                demoMode === "premium" ? "border-forge-grana bg-forge-stone/60" : "border-forge-border bg-forge-paper/50"
+              }`}
+            >
               <div className="flex items-baseline justify-between gap-3">
                 <p className="font-display text-lg text-forge-ink">Pack Digital Premium</p>
                 <p className="font-display text-lg text-forge-grana">9,99 €</p>
               </div>
+              {demoMode === "premium" ? (
+                <p className="mt-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-forge-grana">
+                  Demo local · Pack desbloqueado para descarga simulada
+                </p>
+              ) : null}
               <ul className="mt-3 space-y-1.5 text-xs text-forge-graphite">
                 {PREMIUM_FEATURES.map((feature) => (
                   <li key={feature} className="flex gap-2">
@@ -145,11 +156,15 @@ export function StepDelivery({
                 className="btn-primary mt-4 w-full"
               >
                 {busyProduct === "premium" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <CreditCard className="h-4 w-4" aria-hidden />}
-                {busyProduct === "premium" ? "Abriendo pago" : "Comprar pack · 9,99 €"}
+                {busyProduct === "premium"
+                  ? "Abriendo pago"
+                  : demoMode === "premium"
+                    ? "Generar entrega ZIP (demo local)"
+                    : "Comprar pack · 9,99 €"}
               </button>
             </div>
 
-            <div className="border border-forge-border p-4">
+            <div className={`border p-4 ${demoMode === "similarity" ? "border-forge-grana bg-forge-stone/50" : "border-forge-border"}`}>
               <div className="flex items-baseline justify-between gap-3">
                 <p className="font-display text-lg text-forge-ink">Informe de Similitud</p>
                 <p className="font-display text-lg text-forge-leather">19,90 €</p>
@@ -162,6 +177,19 @@ export function StepDelivery({
                   </li>
                 ))}
               </ul>
+              {demoMode === "similarity" ? (
+                <div className="mt-4 border border-forge-border bg-forge-white p-3.5 text-xs leading-relaxed text-forge-graphite">
+                  <p className="eyebrow">Vista previa · Informe de Similitud 19,90 €</p>
+                  <p className="mt-2 font-semibold text-forge-ink">
+                    Expediente orientativo · {proposal?.blueprint.combo || "Hierro seleccionado"} ({draft.profile})
+                  </p>
+                  <ul className="mt-2 space-y-1">
+                    <li>• Contraste morfológico en registros RUCTL, ANCCE, OEPM y EUIPO.</li>
+                    <li>• Análisis de silueta, remates y riesgo de confusión en marcado.</li>
+                    <li>• Limitaciones expresas y recomendaciones previas a registro RD 787/2023.</li>
+                  </ul>
+                </div>
+              ) : null}
               <button
                 type="button"
                 onClick={() => onCheckout("similarity")}
@@ -202,7 +230,11 @@ export function StepDelivery({
         </div>
       </div>
 
-      <div className="mt-6 border border-forge-border bg-forge-stone p-5">
+      <div
+        className={`mt-6 border p-5 ${
+          demoMode === "forja" ? "border-forge-grana bg-forge-white" : "border-forge-border bg-forge-stone"
+        }`}
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="eyebrow-muted">Servicios profesionales</p>
@@ -214,12 +246,36 @@ export function StepDelivery({
           Adjuntamos tu diseño al expediente y te respondemos con alcance, presupuesto y plazo para acero inoxidable o bronce.
         </p>
 
+        {demoMode === "forja" ? (
+          <div className="mt-4 border border-forge-border bg-forge-paper p-4 text-xs leading-relaxed text-forge-graphite">
+            <p className="eyebrow">Resumen de encargo de forja física (demo local)</p>
+            <div className="mt-2 grid gap-2 sm:grid-cols-3">
+              <div>
+                <p className="font-semibold text-forge-ink">Material</p>
+                <p>Acero inoxidable AISI 316 o bronce</p>
+              </div>
+              <div>
+                <p className="font-semibold text-forge-ink">Aplicación</p>
+                <p>Marcado a fuego, nitrógeno líquido o cancela</p>
+              </div>
+              <div>
+                <p className="font-semibold text-forge-ink">Referencia</p>
+                <p>{proposal?.blueprint.combo || "Hierro sin seleccionar"}</p>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <button type="button" onClick={() => openDrawer("revision")} className="btn-ghost w-full">
             <FileText className="h-4 w-4" aria-hidden />
             Pedir revisión
           </button>
-          <button type="button" onClick={() => openDrawer("forja")} className="btn-ghost w-full">
+          <button
+            type="button"
+            onClick={() => openDrawer("forja")}
+            className={demoMode === "forja" ? "btn-primary w-full" : "btn-ghost w-full"}
+          >
             <Hammer className="h-4 w-4" aria-hidden />
             Encargar forja física
           </button>

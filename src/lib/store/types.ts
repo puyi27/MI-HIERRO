@@ -19,6 +19,8 @@ export interface DesignRecord {
   style: string;
   blueprint: BrandBlueprint;
   svgMaster: string;
+  rasterPng: string | null;
+  generationKey: string | null;
   previewKey: string | null;
   scores: DesignScores;
   lore: string;
@@ -40,6 +42,8 @@ export interface CreateDesignInput {
   svgMaster: string;
   scores: DesignScores;
   lore: string;
+  rasterPng?: string | null;
+  generationKey?: string | null;
 }
 
 export interface OrderRecord {
@@ -106,6 +110,7 @@ export interface CreateLeadInput {
 export interface ForgeStore {
   createDesign(input: CreateDesignInput): Promise<DesignRecord>;
   getDesign(id: string): Promise<DesignRecord | null>;
+  findGeneration(key: string): Promise<DesignRecord[]>;
   createOrder(input: CreateOrderInput): Promise<OrderRecord>;
   getOrder(id: string): Promise<OrderRecord | null>;
   getOrderBySession(sessionId: string): Promise<OrderRecord | null>;

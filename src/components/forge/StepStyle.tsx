@@ -2,9 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { animate, createScope, stagger, utils } from "animejs";
-import { createDrawable } from "animejs/svg";
-import { AlertCircle, Hammer, Loader2, Lock } from "lucide-react";
+import { animate, createScope, stagger } from "animejs";
+import { AlertCircle, ArrowRight, Hammer, History, Loader2, Lock } from "lucide-react";
 import { STYLE_META, STYLE_TYPES, type ForgeProposal, type ForgeStyle } from "@/types/forge";
 import { StyleGlyph } from "@/components/forge/StyleGlyph";
 import { ProposalCard } from "@/components/forge/ProposalCard";
@@ -18,6 +17,11 @@ interface StepStyleProps {
   onGenerate: () => void;
   generating: boolean;
   error: string | null;
+  rateLimited?: boolean;
+  remainingToday?: number | null;
+  hasSavedProposals?: boolean;
+  onRestoreSaved?: () => void;
+  onGoToDelivery?: () => void;
   proposals: ForgeProposal[];
   selectedProposalId: string | null;
   onSelectProposal: (proposalId: string) => void;
@@ -31,6 +35,11 @@ export function StepStyle({
   onGenerate,
   generating,
   error,
+  rateLimited = false,
+  remainingToday = null,
+  hasSavedProposals = false,
+  onRestoreSaved,
+  onGoToDelivery,
   proposals,
   selectedProposalId,
   onSelectProposal,
@@ -40,23 +49,6 @@ export function StepStyle({
   const rootRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const [emblaRef] = useEmblaCarousel({ align: "start", containScroll: "trimSnaps" });
-
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root || prefersReducedMotion()) return;
-    const scope = createScope({ root }).add(() => {
-      const paths = utils.$("[data-style-glyph] path");
-      if (paths.length === 0) return;
-      const drawables = createDrawable(paths);
-      animate(drawables, {
-        draw: ["0 0", "0 1"],
-        duration: 1100,
-        delay: stagger(20),
-        ease: "inOutSine",
-      });
-    });
-    return () => scope.revert();
-  }, []);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -135,7 +127,7 @@ export function StepStyle({
           ) : (
             <div className="border border-forge-border bg-forge-white p-1.5">
               <div className="flex flex-col items-center justify-center border border-forge-border px-6 py-16 text-center">
-                <StyleGlyph style={style} className="h-28 w-28 text-forge-ink" />
+                <StyleGlyph style={style} className="h-36 w-36" />
                 <p className="mt-6 font-display text-xl text-forge-ink">
                   {activeStyleMeta.label} · {initialsLabel || "—"}
                 </p>
@@ -166,7 +158,7 @@ export function StepStyle({
                   data-selected={active}
                   className="card-select flex items-center gap-4 p-4"
                 >
-                  <span className={`shrink-0 ${active ? "text-forge-grana" : "text-forge-ink"}`}>
+                  <span className={`shrink-0 transition-opacity ${active ? "opacity-100" : "opacity-55"}`}>
                     <StyleGlyph style={styleKey} className="h-12 w-12" />
                   </span>
                   <span className="min-w-0 flex-1">
@@ -189,15 +181,41 @@ export function StepStyle({
             <p className="mt-2.5 text-xs leading-relaxed text-forge-graphite">
               {generating
                 ? "Componiendo iniciales, soldando remates y rasterizando láminas con marca de agua."
-                : "Tres propuestas gratuitas · sin tarjeta · vista previa con marca de agua."}
+                : remainingToday !== null
+                  ? `Te quedan ${remainingToday} láminas gratuitas con IA hoy · vista previa con marca de agua.`
+                  : "Tres propuestas gratuitas · sin tarjeta · vista previa con marca de agua."}
             </p>
           </div>
 
           {error ? (
-            <div role="alert" className="mt-5 flex gap-3 border border-forge-grana/40 bg-forge-grana/5 p-4 text-sm text-forge-grana">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-              <p>{error}</p>
-            </div>
+            rateLimited ? (
+              <div role="alert" className="mt-5 border border-forge-border border-l-2 border-l-forge-grana bg-forge-white p-4">
+                <p className="eyebrow">Cupo diario de fragua</p>
+                <p className="mt-2 text-xs leading-relaxed text-forge-ink">{error}</p>
+                <p className="mt-2 text-xs leading-relaxed text-forge-graphite">
+                  Las combinaciones ya forjadas reutilizan su caché al instante sin consumir cupo.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {hasSavedProposals && onRestoreSaved ? (
+                    <button type="button" onClick={onRestoreSaved} className="btn-ghost px-3 py-2 text-[0.68rem]">
+                      <History className="h-3.5 w-3.5" aria-hidden />
+                      Recuperar láminas guardadas
+                    </button>
+                  ) : null}
+                  {onGoToDelivery ? (
+                    <button type="button" onClick={onGoToDelivery} className="btn-primary px-3.5 py-2 text-[0.68rem]">
+                      Pasar al Pack Digital
+                      <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            ) : (
+              <div role="alert" className="mt-5 flex gap-3 border border-forge-grana/40 bg-forge-grana/5 p-4 text-sm text-forge-grana">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                <p>{error}</p>
+              </div>
+            )
           ) : null}
         </div>
       </div>

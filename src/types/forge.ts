@@ -2,8 +2,24 @@ import { z } from "zod";
 
 export const PROFILE_TYPES = ["novillero", "ganaderia", "particular"] as const;
 export const STYLE_TYPES = ["tradicional", "monograma", "geometrico", "heraldico"] as const;
+export const USE_CASES = ["fuego", "nitrogeno", "bordado_oro", "piel"] as const;
 export const CHARACTER_TYPES = ["sobrio", "senorial", "agresivo", "minimalista"] as const;
 export const REMATE_TYPES = ["cruz", "corona", "arco", "sin-remate"] as const;
+export const PREVIEW_TEXTURES = [
+  "hierro",
+  "bordado",
+  "cuero",
+  "capote",
+  "esporton",
+  "fundon",
+  "maleta",
+  "avatar",
+  "fragua",
+  "montura",
+  "cancela",
+  "polo",
+] as const;
+export type PreviewTexture = (typeof PREVIEW_TEXTURES)[number];
 export const FONT_FAMILIES = ["cinzel", "cormorant", "inter"] as const;
 export const LAYOUTS = ["interlocked", "stacked", "shield", "arc"] as const;
 export const FRAMES = ["none", "circle", "arch", "double-bar"] as const;
@@ -51,6 +67,7 @@ export const ANCHOR_POINTS = [
 
 export type ProfileType = (typeof PROFILE_TYPES)[number];
 export type ForgeStyle = (typeof STYLE_TYPES)[number];
+export type UseCaseKey = (typeof USE_CASES)[number];
 export type CharacterType = (typeof CHARACTER_TYPES)[number];
 export type RemateType = (typeof REMATE_TYPES)[number];
 export type FontFamilyKey = (typeof FONT_FAMILIES)[number];
@@ -231,6 +248,7 @@ export const proposalSchema = z
     previewUrl: z.string().startsWith("/api/preview"),
     scores: scoreSchema,
     explanation: z.string().min(10).max(400),
+    engine: z.enum(["ia", "local"]).optional(),
   })
   .strict();
 
@@ -240,6 +258,8 @@ export const generateRequestSchema = z.object({
   profile: userProfileSchema,
   initials: initialsCombinationSchema,
   style: z.enum(STYLE_TYPES),
+  use: z.enum(USE_CASES).optional(),
+  notes: z.string().trim().max(280, "Las notas no pueden superar 280 caracteres").optional(),
 });
 
 export type GenerateRequest = z.infer<typeof generateRequestSchema>;
@@ -258,7 +278,7 @@ export type GenerateResponse = z.infer<typeof generateResponseSchema>;
 export const previewQuerySchema = z.object({
   d: z.string().min(1).max(64),
   v: z.coerce.number().int().min(0).max(2).default(0),
-  t: z.enum(["hierro", "bordado", "cuero"]).default("hierro"),
+  t: z.enum(PREVIEW_TEXTURES).default("hierro"),
   f: z.enum(["png", "webp"]).default("png"),
 });
 
@@ -266,7 +286,7 @@ export type PreviewQuery = z.infer<typeof previewQuerySchema>;
 
 export const storyRequestSchema = z.object({
   designId: z.string().min(1).max(64),
-  variant: z.enum(["hierro", "bordado", "cuero"]).default("hierro"),
+  variant: z.enum(PREVIEW_TEXTURES).default("hierro"),
   format: z.enum(["story", "avatar"]).default("story"),
 });
 

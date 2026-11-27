@@ -59,6 +59,11 @@ export function ProposalCard({ proposal, selected, onSelect, index, divisaId }: 
 
         <div className="p-4 text-left">
           <p className="text-xs leading-relaxed text-forge-graphite">{proposal.explanation}</p>
+          {process.env.NODE_ENV !== "production" && proposal.engine === "ia" ? (
+            <p className="mt-2 font-mono text-[0.55rem] uppercase tracking-[0.16em] text-forge-leather">
+              Motor: Recraft V4
+            </p>
+          ) : null}
         </div>
 
         <dl className="grid grid-cols-3 divide-x divide-forge-border border-t border-forge-border text-center">

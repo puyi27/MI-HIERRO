@@ -58,6 +58,8 @@ model Design {
   style        ForgeStyle
   blueprint    Json
   svgMaster    String      @db.Text
+  rasterPng    String?     @db.Text
+  generationKey String?
   previewKey   String?
   scores       Json?
   lore         String      @db.Text
@@ -69,6 +71,7 @@ model Design {
   leads        ForgeLead[]
 
   @@index([createdAt])
+  @@index([generationKey])
 }
 
 model Order {

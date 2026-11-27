@@ -2,14 +2,22 @@
 
 import useEmblaCarousel from "embla-carousel-react";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
-import { Download, Eye, Loader2, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
-import type { ForgeProposal } from "@/types/forge";
+import { ArrowRight, CheckCircle2, Download, Eye, Loader2, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import type { ForgeProposal, ProfileType } from "@/types/forge";
 import { STYLE_META } from "@/types/forge";
 import { PreviewCanvas } from "@/components/forge/PreviewCanvas";
-import { DIVISA_OPTIONS, TEXTURE_OPTIONS, type ForgeTexture } from "@/components/forge/types";
+import {
+  DIVISA_OPTIONS,
+  getTextureOptionsForProfile,
+  previewUrlForTexture,
+  type DemoPackMode,
+  type ForgeTexture,
+  type TextureOption,
+} from "@/components/forge/types";
 import { useMediaQuery } from "@/components/ui/useMediaQuery";
 
 interface StepWorldProps {
+  profile: ProfileType;
   proposals: ForgeProposal[];
   selectedProposal: ForgeProposal | null;
   texture: ForgeTexture;
@@ -19,9 +27,12 @@ interface StepWorldProps {
   onSelectProposal: (proposalId: string) => void;
   onStory: () => void;
   storyBusy: boolean;
+  demoMode?: DemoPackMode;
+  onGoToDelivery?: () => void;
 }
 
 export function StepWorld({
+  profile,
   proposals,
   selectedProposal,
   texture,
@@ -31,6 +42,8 @@ export function StepWorld({
   onSelectProposal,
   onStory,
   storyBusy,
+  demoMode = "free",
+  onGoToDelivery,
 }: StepWorldProps) {
   const isMobile = useMediaQuery("(max-width: 767px)");
   const [emblaRef] = useEmblaCarousel({ align: "start", containScroll: "trimSnaps" });
@@ -45,11 +58,15 @@ export function StepWorld({
     );
   }
 
+  const options = getTextureOptionsForProfile(profile);
+  const activeTexture = options.some((option) => option.id === texture) ? texture : options[0].id;
+  const activeOption = options.find((option) => option.id === activeTexture) ?? options[0];
   const meta = STYLE_META[selectedProposal.blueprint.style];
   const activeDivisa = DIVISA_OPTIONS.find((item) => item.id === divisaId) ?? DIVISA_OPTIONS[0];
+  const activePreviewUrl = previewUrlForTexture(selectedProposal.previewUrl, activeTexture);
 
-  const textureButton = (option: (typeof TEXTURE_OPTIONS)[number]) => {
-    const active = texture === option.id;
+  const textureButton = (option: TextureOption) => {
+    const active = activeTexture === option.id;
     return (
       <button
         key={option.id}
@@ -57,14 +74,14 @@ export function StepWorld({
         role="tab"
         aria-selected={active}
         onClick={() => onTextureChange(option.id)}
-        className={`w-full rounded-[2px] border px-3.5 py-2 text-left transition ${
+        className={`w-full rounded-[2px] border px-3 py-2 text-left transition ${
           active ? "border-forge-grana bg-forge-white" : "border-forge-border bg-forge-stone/60 hover:border-forge-leather"
         }`}
       >
-        <span className={`block text-[0.7rem] font-semibold uppercase tracking-[0.12em] ${active ? "text-forge-grana" : "text-forge-ink"}`}>
+        <span className={`block text-[0.68rem] font-semibold uppercase tracking-[0.1em] ${active ? "text-forge-grana" : "text-forge-ink"}`}>
           {option.label}
         </span>
-        <span className="mt-0.5 block text-[0.65rem] text-forge-graphite">{option.hint}</span>
+        <span className="mt-0.5 block text-[0.62rem] text-forge-graphite">{option.hint}</span>
       </button>
     );
   };
@@ -74,8 +91,25 @@ export function StepWorld({
       <p className="eyebrow">IV. Avíos y trastos</p>
       <h1 className="mt-3 font-display text-3xl leading-tight text-forge-ink sm:text-4xl">Míralo en tu mundo</h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-forge-graphite">
-        Prueba tu hierro sobre metal forjado, bordado de avíos y cuero quemado. Lámina de prueba rasterizada con marca de agua.
+        {profile === "novillero"
+          ? "Prueba tu hierro sobre capote en hilo de oro, esportón de piel, fundón de espadas, maleta del mozo y avatar."
+          : "Prueba tu hierro sobre fragua viva, montura vaquera, cancela de finca y polo de campo."}
       </p>
+
+      {demoMode === "premium" ? (
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border border-forge-gold bg-forge-white px-4 py-3 text-xs text-forge-ink">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-forge-leather" aria-hidden />
+            <span>Demo local · Pack Digital 9,99 € activo con acceso directo al pliego ZIP completo.</span>
+          </div>
+          {onGoToDelivery ? (
+            <button type="button" onClick={onGoToDelivery} className="inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.12em] text-forge-grana underline underline-offset-2">
+              Ir a descarga del Pack
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </button>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mt-8 grid gap-8 lg:grid-cols-12 lg:items-start">
         <div className="lg:sticky lg:top-24 lg:col-span-7">
@@ -83,15 +117,17 @@ export function StepWorld({
             {isMobile ? (
               <div className="overflow-hidden" ref={emblaRef}>
                 <div className="flex gap-2">
-                  {TEXTURE_OPTIONS.map((option) => (
-                    <div key={option.id} className="min-w-0 flex-[0_0_64%]">
+                  {options.map((option) => (
+                    <div key={option.id} className="min-w-0 flex-[0_0_58%]">
                       {textureButton(option)}
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-2">{TEXTURE_OPTIONS.map((option) => textureButton(option))}</div>
+              <div className={`grid gap-2 ${options.length >= 5 ? "grid-cols-3 xl:grid-cols-5" : "grid-cols-2 sm:grid-cols-4"}`}>
+                {options.map((option) => textureButton(option))}
+              </div>
             )}
           </div>
 
@@ -101,7 +137,7 @@ export function StepWorld({
                 <div>
                   <div className="flex items-center justify-between border-b border-forge-border bg-forge-paper px-3 py-2">
                     <span className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-forge-graphite">
-                      Lupa de inspección
+                      {activeOption.label} · Lupa de inspección
                     </span>
                     <div className="flex items-center gap-1">
                       <button
@@ -134,9 +170,9 @@ export function StepWorld({
                   <div className="overflow-hidden border border-forge-border">
                     <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
                       <PreviewCanvas
-                        previewUrl={selectedProposal.previewUrl}
-                        texture={texture}
-                        alt={`Hierro ${selectedProposal.blueprint.combo} sobre ${texture}`}
+                        previewUrl={activePreviewUrl}
+                        texture={activeTexture}
+                        alt={`Hierro ${selectedProposal.blueprint.combo} sobre ${activeOption.label}`}
                       />
                     </TransformComponent>
                   </div>

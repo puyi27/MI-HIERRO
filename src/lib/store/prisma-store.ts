@@ -33,6 +33,8 @@ function designRecord(design: {
   style: string;
   blueprint: Prisma.JsonValue;
   svgMaster: string;
+  rasterPng: string | null;
+  generationKey: string | null;
   previewKey: string | null;
   scores: Prisma.JsonValue;
   lore: string;
@@ -52,6 +54,8 @@ function designRecord(design: {
     style: design.style,
     blueprint: design.blueprint as unknown as BrandBlueprint,
     svgMaster: design.svgMaster,
+    rasterPng: design.rasterPng,
+    generationKey: design.generationKey,
     previewKey: design.previewKey,
     scores: design.scores as unknown as DesignScores,
     lore: design.lore,
@@ -107,6 +111,8 @@ export const prismaStore: ForgeStore = {
         style: input.style as ForgeStyle,
         blueprint: toJson(input.blueprint),
         svgMaster: input.svgMaster,
+        rasterPng: input.rasterPng ?? null,
+        generationKey: input.generationKey ?? null,
         scores: toJson(input.scores),
         lore: input.lore,
       },
@@ -117,6 +123,15 @@ export const prismaStore: ForgeStore = {
   async getDesign(id: string) {
     const design = await prisma.design.findUnique({ where: { id } });
     return design ? designRecord(design) : null;
+  },
+
+  async findGeneration(key: string) {
+    const designs = await prisma.design.findMany({
+      where: { generationKey: key },
+      orderBy: { createdAt: "asc" },
+      take: 3,
+    });
+    return designs.map(designRecord);
   },
 
   async createOrder(input: CreateOrderInput) {

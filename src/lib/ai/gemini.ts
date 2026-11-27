@@ -3,7 +3,12 @@ import {
   ARCHITECTURES,
   brandBlueprintSchema,
   type BrandBlueprint,
+  type ForgeStyle,
   type GenerateRequest,
+  type InitialsCombination,
+  type ProfileType,
+  type UseCaseKey,
+  type UserProfileInput,
 } from "@/types/forge";
 import { buildDeterministicBlueprints, explainBlueprint } from "@/lib/forge-engine/presets";
 
@@ -130,5 +135,116 @@ Genera tres variantes reales del estilo solicitado, con arquitecturas distintas 
     };
   } catch {
     return fallback;
+  }
+}
+
+export interface ArtDirectionInput {
+  profile: UserProfileInput;
+  initials: InitialsCombination;
+  style: ForgeStyle;
+  use: UseCaseKey;
+  notes?: string;
+}
+
+export interface ArtDirection {
+  prompt: string;
+  source: "gemini" | "deterministic";
+}
+
+const ART_CONTRACT = [
+  "Pure black silhouette in #000000 only, on a pure white #FFFFFF background.",
+  "Bold hand-forged iron stroke of constant weight, like a welded iron pletina.",
+  "Open internal cavities: every counter and the light gap between initials stays clean white.",
+  "One single emblem, centred, isolated, with a generous white margin on all four sides.",
+  "Flat 2D, symmetrical, high contrast, vector-ready for tracing into one single-colour SVG path.",
+  "No gradients, no shading, no highlights, no drop shadows, no bevels, no texture, no metallic render.",
+  "No extra borders, frames, ornaments or background scene beyond the requested emblem.",
+  "No additional letters, words, numbers, watermark or signature.",
+].join(" ");
+
+const ART_STYLE_BRIEF: Record<ForgeStyle, string> = {
+  tradicional: "traditional Spanish ganaderia iron: rooted serifs, straight stems, one welded silhouette",
+  monograma: "interlocking monogram: the initials fused into one continuous mark with a clean light gap",
+  geometrico: "geometric mark: strict symmetry, constant stroke, straight cuts, no flourishes",
+  heraldico: "heraldic emblem: crest-like balance with an open three-point crown kept as a single welded line",
+};
+
+const ART_USE_BRIEF: Record<UseCaseKey, string> = {
+  fuego: "branding iron burnt into hide: heavy pletina, rounded weld joints, readable at 25 cm",
+  nitrogeno: "freeze brand: single lighter line weight, wide counters that stay legible on dark hide",
+  bordado_oro: "gold embroidery on capote and polo: filled shapes with holes wide enough for needle and thread",
+  piel: "burnt leather stamp and carved wood: chunky counters that survive heat and compression",
+};
+
+const ART_PROFILE_BRIEF: Record<ProfileType, string> = {
+  novillero: "personal mark of a bullfighter, readable at a distance on capote and polo",
+  ganaderia: "livestock brand for a fighting bull ranch or a PRE stud farm",
+  particular: "family seal for a country estate, its gate and its tack room",
+};
+
+const ART_DIRECTION_SYSTEM_PROMPT = `Eres el director de arte de MI HIERRO. Traduces una ficha de hierro a un prompt técnico en inglés para un generador de imágenes con estilo entrenado.
+Devuelve únicamente el prompt en inglés, sin explicaciones, sin viñetas y sin comillas.
+El prompt debe describir una única silueta plana de hierro forjado, exigiendo negro puro #000000 sobre blanco puro #FFFFFF, trazo contundente de pletina forjada, huecos internos abiertos, sin degradados, sin sombras, sin texturas, sin bordes extra y sin letras distintas a las iniciales.`;
+
+const ART_PROMPT_TAIL =
+  "Render it as a flat single-colour black ink mark ready for vector tracing, with no anti-aliased grey edges.";
+
+function enforceArtContract(prompt: string): string {
+  const trimmed = prompt.trim().replace(/\s+/g, " ");
+  const complete = trimmed.includes("#000000") && trimmed.includes("#FFFFFF") && /no gradients/i.test(trimmed);
+  if (complete) return trimmed;
+  return `${trimmed.replace(/[.\s]+$/, "")}. ${ART_CONTRACT} ${ART_PROMPT_TAIL}`.replace(/\s+/g, " ").trim();
+}
+
+export function buildDeterministicArtPrompt(input: ArtDirectionInput): string {
+  const letters = input.initials.letters.join(" ");
+  const origin = input.profile.origin ? ` from ${input.profile.origin}` : "";
+  const notes = input.notes ? ` Client notes: ${input.notes}.` : "";
+  return [
+    `Design a ${input.style} cattle-brand emblem for ${ART_PROFILE_BRIEF[input.profile.profile]}${origin}.`,
+    `Initials: exactly ${letters}, nothing else.`,
+    `Style direction: ${ART_STYLE_BRIEF[input.style]}.`,
+    `Physical use: ${ART_USE_BRIEF[input.use]}.`,
+    `Character: ${input.profile.character}, finishing with ${input.profile.remate === "sin-remate" ? "no top ornament" : `a ${input.profile.remate} top ornament`}.`,
+    `${ART_CONTRACT} ${ART_PROMPT_TAIL}`,
+    notes,
+  ]
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export async function buildArtDirectionPrompt(input: ArtDirectionInput): Promise<ArtDirection> {
+  const fallbackPrompt = buildDeterministicArtPrompt(input);
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return { prompt: fallbackPrompt, source: "deterministic" };
+
+  try {
+    const client = new GoogleGenAI({ apiKey });
+    const response = await client.models.generateContent({
+      model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+      contents: `${ART_DIRECTION_SYSTEM_PROMPT}
+
+Ficha de hierro:
+Perfil: ${input.profile.profile}
+Nombre: ${input.profile.firstName} ${input.profile.lastName1}
+Procedencia: ${input.profile.origin || "no indicada"}
+Carácter: ${input.profile.character}
+Remate: ${input.profile.remate}
+Iniciales: ${input.initials.letters.join("")}
+Estilo: ${input.style}
+Uso físico: ${input.use}
+Notas: ${input.notes || "ninguna"}`,
+      config: {
+        temperature: 0.7,
+        maxOutputTokens: 500,
+      },
+    });
+
+    const text = (response.text ?? "").trim();
+    if (text.length < 60) return { prompt: fallbackPrompt, source: "deterministic" };
+    return { prompt: enforceArtContract(text.slice(0, 1200)), source: "gemini" };
+  } catch {
+    return { prompt: fallbackPrompt, source: "deterministic" };
   }
 }

@@ -9,6 +9,7 @@ import { StepInitials } from "@/components/forge/StepInitials";
 import { StepStyle } from "@/components/forge/StepStyle";
 import { StepWorld } from "@/components/forge/StepWorld";
 import { StepDelivery } from "@/components/forge/StepDelivery";
+import { DemoSwitcher } from "@/components/forge/DemoSwitcher";
 import { useForgeWizard } from "@/components/forge/useForgeWizard";
 
 interface ForgeWizardProps {
@@ -23,8 +24,13 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
     errors,
     generating,
     generateError,
+    generateRateLimited,
+    remainingToday,
+    hasSavedProposals,
     texture,
     setTexture,
+    demoMode,
+    selectDemoMode,
     storyBusy,
     avatarBusy,
     busyProduct,
@@ -73,6 +79,16 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
             onGenerate={wizard.generate}
             generating={generating}
             error={generateError}
+            rateLimited={generateRateLimited}
+            remainingToday={remainingToday}
+            hasSavedProposals={hasSavedProposals}
+            onRestoreSaved={wizard.restoreSavedProposals}
+            onGoToDelivery={() => {
+              if (!selectedProposal && hasSavedProposals) {
+                wizard.restoreSavedProposals();
+              }
+              wizard.goToStep(5);
+            }}
             proposals={draft.proposals}
             selectedProposalId={selectedProposal?.id ?? null}
             onSelectProposal={wizard.selectProposal}
@@ -83,6 +99,7 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
 
         {draft.step === 4 ? (
           <StepWorld
+            profile={draft.profile}
             proposals={draft.proposals}
             selectedProposal={selectedProposal}
             texture={texture}
@@ -92,6 +109,8 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
             onSelectProposal={wizard.selectProposal}
             onStory={wizard.downloadStory}
             storyBusy={storyBusy}
+            demoMode={demoMode}
+            onGoToDelivery={() => wizard.goToStep(5)}
           />
         ) : null}
 
@@ -111,6 +130,7 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
             onLead={wizard.submitLead}
             leadBusy={leadBusy}
             leadFeedback={leadFeedback}
+            demoMode={demoMode}
           />
         ) : null}
       </motion.div>
@@ -171,6 +191,8 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
           ) : null}
         </div>
       </div>
+
+      <DemoSwitcher mode={demoMode} onChange={selectDemoMode} />
     </div>
   );
 }

@@ -13,7 +13,9 @@ import {
 import { buildInitialCombinations } from "@/lib/forge-engine/initials";
 import {
   createDraft,
+  defaultTextureForProfile,
   type CheckoutFeedback,
+  type DemoPackMode,
   type ForgeTexture,
   type LeadFeedback,
   type WizardDraft,
@@ -46,7 +48,11 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
   const [hydrated, setHydrated] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
-  const [texture, setTexture] = useState<ForgeTexture>("hierro");
+  const [generateRateLimited, setGenerateRateLimited] = useState(false);
+  const [remainingToday, setRemainingToday] = useState<number | null>(null);
+  const [savedProposals, setSavedProposals] = useState<ForgeProposal[]>([]);
+  const [texture, setTexture] = useState<ForgeTexture>(() => defaultTextureForProfile(initialProfile));
+  const [demoMode, setDemoMode] = useState<DemoPackMode>("free");
   const [storyBusy, setStoryBusy] = useState(false);
   const [avatarBusy, setAvatarBusy] = useState(false);
   const [busyProduct, setBusyProduct] = useState<"premium" | "similarity" | null>(null);
@@ -66,9 +72,10 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
       setDraft(createDraft(initialProfile));
       setErrors({});
       setGenerateError(null);
+      setGenerateRateLimited(false);
       setCheckoutFeedback(null);
       setLeadFeedback(null);
-      setTexture("hierro");
+      setTexture(defaultTextureForProfile(initialProfile));
       try {
         window.sessionStorage.removeItem(STORAGE_KEY);
       } catch {
@@ -85,12 +92,19 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
         if (parsed && parsed.profile && parsed.profile !== initialProfile) {
           window.sessionStorage.removeItem(STORAGE_KEY);
           setDraft(createDraft(initialProfile));
+          setTexture(defaultTextureForProfile(initialProfile));
         } else if (parsed && typeof parsed.step === "number" && parsed.step >= 1 && parsed.step <= 5) {
-          setDraft({ ...createDraft(initialProfile), ...parsed });
+          const restored = { ...createDraft(initialProfile), ...parsed };
+          setDraft(restored);
+          if (restored.proposals.length > 0) {
+            setSavedProposals(restored.proposals);
+          }
+          setTexture(defaultTextureForProfile(restored.profile));
         }
       }
     } catch {
       setDraft(createDraft(initialProfile));
+      setTexture(defaultTextureForProfile(initialProfile));
     }
     setHydrated(true);
   }, [initialProfile]);
@@ -153,11 +167,15 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
 
   const update = useCallback((patch: Partial<WizardDraft>) => {
     setDraft((previous) => {
+      if (previous.proposals.length > 0) {
+        setSavedProposals(previous.proposals);
+      }
       const next = { ...previous, ...patch };
 
       if ("profile" in patch && patch.profile !== previous.profile) {
         const fresh = createDraft(patch.profile!);
         fresh.step = previous.step;
+        setTexture(defaultTextureForProfile(patch.profile!));
         return fresh;
       }
 
@@ -169,6 +187,7 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
       return next;
     });
     setGenerateError(null);
+    setGenerateRateLimited(false);
   }, []);
 
   const goToStep = useCallback((step: number) => {
@@ -182,6 +201,28 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
   const setEmail = useCallback((email: string) => {
     setDraft((previous) => ({ ...previous, email }));
   }, []);
+
+  const restoreSavedProposals = useCallback(() => {
+    if (savedProposals.length === 0) return;
+    setDraft((previous) => ({
+      ...previous,
+      proposals: savedProposals,
+      selectedProposalId: savedProposals[0].id,
+    }));
+    setGenerateError(null);
+    setGenerateRateLimited(false);
+    toast.success("Láminas guardadas recuperadas.");
+  }, [savedProposals]);
+
+  const selectDemoMode = useCallback(
+    (mode: DemoPackMode) => {
+      setDemoMode(mode);
+      if (mode === "similarity" || mode === "forja") {
+        setDraft((previous) => ({ ...previous, step: 5 }));
+      }
+    },
+    [],
+  );
 
   const validateIdentity = (): boolean => {
     const parsed = userProfileSchema.safeParse(profilePayload);
@@ -223,17 +264,20 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
   const generate = async () => {
     if (!selectedCombination) {
       setGenerateError("Vuelve al paso de iniciales para elegir una combinación.");
+      setGenerateRateLimited(false);
       return;
     }
     const parsedProfile = userProfileSchema.safeParse(profilePayload);
     if (!parsedProfile.success) {
       setGenerateError("Revisa tus datos antes de forjar.");
+      setGenerateRateLimited(false);
       goToStep(1);
       return;
     }
 
     setGenerating(true);
     setGenerateError(null);
+    setGenerateRateLimited(false);
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -248,11 +292,16 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
+        const isLimited = response.status === 429;
         const message =
           data && typeof data === "object" && "error" in data
             ? String((data as { error: unknown }).error)
-            : "No se pudo forjar. Inténtalo de nuevo.";
+            : isLimited
+              ? "Has alcanzado el cupo diario de láminas gratuitas con IA."
+              : "No se pudo forjar. Inténtalo de nuevo.";
         setGenerateError(message);
+        setGenerateRateLimited(isLimited);
+        if (isLimited) setRemainingToday(0);
         toast.error(message);
         return;
       }
@@ -260,10 +309,13 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
       const parsed = generateResponseSchema.safeParse(data);
       if (!parsed.success) {
         setGenerateError("La respuesta de la fragua no era válida. Reinténtalo.");
+        setGenerateRateLimited(false);
         toast.error("La fragua devolvió una respuesta inesperada.");
         return;
       }
 
+      setRemainingToday(parsed.data.remainingToday);
+      setSavedProposals(parsed.data.proposals);
       setDraft((previous) => ({
         ...previous,
         proposals: parsed.data.proposals,
@@ -273,6 +325,7 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
       toast.success(`${parsed.data.proposals.length} propuestas forjadas para ${selectedCombination.label}.`);
     } catch {
       setGenerateError("No hay conexión con la fragua. Comprueba tu red e inténtalo otra vez.");
+      setGenerateRateLimited(false);
       toast.error("No hay conexión con la fragua.");
     } finally {
       setGenerating(false);
@@ -326,11 +379,15 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
       setCheckoutFeedback({ kind: "error", message: "Necesitas un diseño forjado antes de comprar." });
       return;
     }
-    const email = draft.email.trim();
-    if (!EMAIL_PATTERN.test(email)) {
+    const resolvedEmail = draft.email.trim() || (demoMode !== "free" ? "demo@mihierro.es" : "");
+    if (!EMAIL_PATTERN.test(resolvedEmail)) {
       setCheckoutFeedback({ kind: "error", message: "Introduce un email válido para enviarte la entrega." });
       toast.error("Introduce un email válido para la entrega.");
       return;
+    }
+
+    if (!draft.email.trim() && resolvedEmail) {
+      setEmail(resolvedEmail);
     }
 
     setBusyProduct(product);
@@ -339,7 +396,7 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product, designId: selectedProposal.id, email }),
+        body: JSON.stringify({ product, designId: selectedProposal.id, email: resolvedEmail }),
       });
       const data = await response.json().catch(() => null);
 
@@ -411,9 +468,10 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
     setDraft(createDraft(initialProfile));
     setErrors({});
     setGenerateError(null);
+    setGenerateRateLimited(false);
     setCheckoutFeedback(null);
     setLeadFeedback(null);
-    setTexture("hierro");
+    setTexture(defaultTextureForProfile(initialProfile));
     try {
       window.sessionStorage.removeItem(STORAGE_KEY);
     } catch {
@@ -426,8 +484,13 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
     errors,
     generating,
     generateError,
+    generateRateLimited,
+    remainingToday,
+    hasSavedProposals: savedProposals.length > 0 && draft.proposals.length === 0,
     texture,
     setTexture,
+    demoMode,
+    selectDemoMode,
     storyBusy,
     avatarBusy,
     busyProduct,
@@ -441,6 +504,7 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
     goToStep,
     selectProposal,
     setEmail,
+    restoreSavedProposals,
     advanceFromProfile,
     advanceFromInitials,
     generate,

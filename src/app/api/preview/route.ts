@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { previewQuerySchema } from "@/types/forge";
 import { getStore } from "@/lib/store";
-import { renderPreview } from "@/lib/forge-engine/raster";
+import { renderMaskPreview, renderPreview } from "@/lib/forge-engine/raster";
 import { clientKey, rateLimit } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
@@ -38,17 +38,25 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Vista previa no válida" }, { status: 400 });
   }
 
-  const { d, f } = parsed.data;
+  const { d, f, t } = parsed.data;
   const store = await getStore();
   const design = await store.getDesign(d);
   if (!design) {
     return NextResponse.json({ error: "Diseño no encontrado" }, { status: 404 });
   }
 
-  const cacheKey = `${design.id}:${f}`;
+  const cacheKey = `${design.id}:${f}:${t}`;
   let buffer = cacheGet(cacheKey);
   if (!buffer) {
-    buffer = await renderPreview(design.svgMaster, { width: 900, format: f });
+    if (design.rasterPng) {
+      buffer = await renderMaskPreview(Buffer.from(design.rasterPng, "base64"), {
+        width: 900,
+        format: f,
+        backdrop: t,
+      });
+    } else {
+      buffer = await renderPreview(design.svgMaster, { width: 900, format: f, backdrop: t });
+    }
     cacheSet(cacheKey, buffer);
   }
 

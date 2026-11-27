@@ -1,4 +1,5 @@
 import JSZip from "jszip";
+import { rasterBackedSvg, vectorizeRecraftImage } from "@/lib/ai/recraft";
 import { renderHighResolutionPng } from "@/lib/forge-engine/raster";
 import { renderAvatar, renderStoryCard } from "@/lib/forge-engine/story";
 import type { DesignRecord } from "@/lib/store/types";
@@ -15,6 +16,15 @@ export function designSlug(design: DesignRecord): string {
   return base || "mi-hierro";
 }
 
+async function deliverySvg(design: DesignRecord): Promise<string> {
+  if (!design.rasterPng) return design.svgMaster;
+  try {
+    return await vectorizeRecraftImage(Buffer.from(design.rasterPng, "base64"));
+  } catch {
+    return rasterBackedSvg(design.rasterPng);
+  }
+}
+
 export async function buildDeliveryZip(design: DesignRecord): Promise<{ filename: string; buffer: Buffer }> {
   const slug = designSlug(design);
   const zip = new JSZip();
@@ -23,7 +33,7 @@ export async function buildDeliveryZip(design: DesignRecord): Promise<{ filename
   const avatar = await renderAvatar(design, "hierro");
   const story = await renderStoryCard(design, "hierro");
 
-  zip.file(`${slug}-mi-hierro.svg`, design.svgMaster);
+  zip.file(`${slug}-mi-hierro.svg`, await deliverySvg(design));
   zip.file(`${slug}-mi-hierro-2400.png`, png);
   zip.file(`${slug}-avatar-1080.png`, avatar);
   zip.file(`${slug}-story-1080x1920.png`, story);
