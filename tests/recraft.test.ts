@@ -27,8 +27,7 @@ delete process.env.UPSTASH_REDIS_REST_TOKEN;
 
 const { POST: generatePost } = await import("@/app/api/generate/route");
 const { GET: previewGet } = await import("@/app/api/preview/route");
-const { ART_RECIPES, buildArtDirectionPrompt, buildDeterministicArtPrompt, buildVariantPrompts, sanitizeArtPrompt } =
-  await import("@/lib/ai/gemini");
+const { ART_RECIPES, buildDeterministicArtPrompt, buildVariantPrompts, sanitizeArtPrompt } = await import("@/lib/ai/gemini");
 const { buildTransparentMask, generateRecraftRaster, vectorizeRecraftImage } = await import("@/lib/ai/recraft");
 const { resetMemoryRateLimit } = await import("@/lib/security/rate-limit");
 
@@ -148,42 +147,51 @@ beforeEach(() => {
   process.env.RECRAFT_STYLE_HERALDICO = "style-heraldico";
 });
 
-describe("Director de Arte · prompt técnico", () => {
-  it("construye un prompt determinista en inglés con negro puro sobre blanco puro", async () => {
-    const direction = await buildArtDirectionPrompt({
-      profile,
-      initials,
-      style: "heraldico",
-      use: "fuego",
-      notes: "Puerta de finca en Salamanca",
-    });
-
-    expect(direction.source).toBe("deterministic");
-    expect(direction.prompt).toContain("#000000");
-    expect(direction.prompt).toContain("#FFFFFF");
-    expect(direction.prompt).toContain("forged iron stroke");
-    expect(direction.prompt).toMatch(/open internal cavities/i);
-    expect(direction.prompt).toMatch(/no gradients/i);
-    expect(direction.prompt).toContain("J G");
-    expect(direction.prompt).not.toContain("<");
-    expect(direction.prompt.toLowerCase()).not.toContain("serif");
-    expect(direction.prompt.toLowerCase()).not.toContain("luxury");
-    expect(direction.prompt.toLowerCase()).toContain("no floating points");
-  });
-});
-
-describe("Recetas morfológicas · física de forja", () => {
-  const base = buildDeterministicArtPrompt({
+describe("Director de Arte · prompt compacto", () => {
+  const prompt = buildDeterministicArtPrompt({
     profile,
     initials,
-    style: "tradicional",
+    style: "heraldico",
     use: "fuego",
     notes: "Puerta de finca en Salamanca",
   });
 
+  it("envía entre 45 y 55 palabras para que el style_id mande y no se deformen las letras", () => {
+    const words = prompt.trim().split(/\s+/);
+    expect(words.length).toBeGreaterThanOrEqual(45);
+    expect(words.length).toBeLessThanOrEqual(55);
+  });
+
+  it("abre con las iniciales exactas y exige negro puro sobre blanco puro", () => {
+    expect(prompt.startsWith('Featuring the exact bold capital letters "JG" clearly readable')).toBe(true);
+    expect(prompt).toContain("#000000");
+    expect(prompt).toContain("#FFFFFF");
+    expect(prompt).toContain("uniform monoline wrought-iron");
+    expect(prompt).toContain("razor-sharp symmetry");
+    expect(prompt).toContain("no floating points");
+    expect(prompt).not.toContain("<");
+    expect(prompt.toLowerCase()).not.toContain("serif");
+    expect(prompt.toLowerCase()).not.toContain("luxury");
+    expect(prompt.toLowerCase()).not.toContain("primitive");
+    expect(prompt.toLowerCase()).not.toContain("folk");
+  });
+});
+
+describe("Recetas morfológicas · física de forja", () => {
+  it("acota cada prompt final a 45-55 palabras con las iniciales al frente", () => {
+    for (const style of ["tradicional", "monograma", "geometrico", "heraldico"] as const) {
+      for (const prompt of buildVariantPrompts({ initials, style })) {
+        const words = prompt.trim().split(/\s+/);
+        expect(words.length).toBeGreaterThanOrEqual(45);
+        expect(words.length).toBeLessThanOrEqual(55);
+        expect(prompt.startsWith('Featuring the exact bold capital letters "JG" clearly readable')).toBe(true);
+      }
+    }
+  });
+
   it("prohíbe palabras de lujo y exige pletina monoline en tradicional, monograma y geométrico", () => {
     for (const style of ["tradicional", "monograma", "geometrico"] as const) {
-      const prompts = buildVariantPrompts(base, style);
+      const prompts = buildVariantPrompts({ initials, style });
       expect(prompts).toHaveLength(3);
       expect(new Set(prompts).size).toBe(3);
       for (const prompt of prompts) {
@@ -200,10 +208,12 @@ describe("Recetas morfológicas · física de forja", () => {
   });
 
   it("reserva el remate almenado de forja para el estilo heráldico", () => {
-    const heraldic = buildVariantPrompts(base, "heraldico");
-    expect(heraldic[2]).toContain("merlons");
-    expect(heraldic[2].toLowerCase()).toContain("crenellated");
+    const heraldic = buildVariantPrompts({ initials, style: "heraldico" });
+    expect(heraldic[0].toLowerCase()).toContain("merlons");
+    expect(heraldic[2].toLowerCase()).toContain("four-merlon");
+    expect(heraldic[2].toLowerCase()).toContain("no shield");
     expect(heraldic.join(" ").toLowerCase()).not.toContain("luxury");
+    expect(heraldic.join(" ").toLowerCase()).not.toContain("crown");
     expect(heraldic.join(" ").toLowerCase()).toContain("no floating points");
   });
 

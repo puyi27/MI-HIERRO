@@ -7,7 +7,7 @@ import {
   type ProfileType,
   type UseCaseKey,
 } from "@/types/forge";
-import { ART_RECIPES, buildArtDirectionPrompt, buildVariantPrompts, generateBlueprints } from "@/lib/ai/gemini";
+import { ART_RECIPES, buildVariantPrompts, generateBlueprints } from "@/lib/ai/gemini";
 import { RecraftError, generateRecraftRaster, hasRecraft, recraftStyleId } from "@/lib/ai/recraft";
 import { compileForge } from "@/lib/forge-engine/compiler";
 import { buildDeterministicBlueprints, explainBlueprint } from "@/lib/forge-engine/presets";
@@ -113,17 +113,9 @@ async function rasterProposals(input: GenerateRequest, use: UseCaseKey, store: F
     );
   }
 
-  const direction = await buildArtDirectionPrompt({
-    profile: input.profile,
-    initials: input.initials,
-    style: input.style,
-    use,
-    notes: input.notes,
-  });
-
   const recipes = ART_RECIPES[input.style];
   const generationKey = generationKeyFor(input, use);
-  const prompts = buildVariantPrompts(direction.prompt, input.style);
+  const prompts = buildVariantPrompts({ initials: input.initials, style: input.style });
 
   if (process.env.NODE_ENV !== "production") {
     prompts.forEach((prompt, index) => {

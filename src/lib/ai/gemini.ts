@@ -1,14 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
 import {
   ARCHITECTURES,
-  CHARACTER_TYPES,
-  REMATE_TYPES,
   brandBlueprintSchema,
   type BrandBlueprint,
   type ForgeStyle,
   type GenerateRequest,
   type InitialsCombination,
-  type ProfileType,
   type UseCaseKey,
   type UserProfileInput,
 } from "@/types/forge";
@@ -150,37 +147,16 @@ export interface ArtDirectionInput {
   notes?: string;
 }
 
-export interface ArtDirection {
-  prompt: string;
-  source: "gemini" | "deterministic";
-}
-
 export interface ArtRecipe {
   key: string;
   prompt: string;
   description: string;
 }
 
-const FORGE_PHYSICS = [
-  "Authentic 19th-century Spanish cattle branding iron mark (hierro ganadero) from an official Andalusian livestock registry book.",
-  "Bent from a single thick flat wrought-iron metal strip (pletina de forja) with strictly uniform monoline stroke width throughout the entire mark.",
-  "All metal strokes physically welded together into one solid blacksmith stamp, zero floating disconnected pieces, zero tapered calligraphic serifs, stark primitive folk metalwork silhouette.",
-  "Pure solid black (#000000) centered on pure solid white (#FFFFFF), generous open internal spaces so hot iron does not blotch skin.",
-];
+const ART_DIRECTION_CORE =
+  "Iconic, masterfully balanced Spanish bullfighting branding iron (hierro ganadero). Bold uniform monoline wrought-iron silhouette, razor-sharp symmetry, crisp proportions, pure solid black (#000000) centered on pure white (#FFFFFF), all strokes cleanly welded together.";
 
-const ART_CONTRACT = [
-  ...FORGE_PHYSICS,
-  "Every counter and the light gap between initials stays clean white: open internal cavities are mandatory.",
-  "Flat 2D silhouette from a bold hand-forged iron stroke of constant width, drawn as plain folk metalwork and never as a typographic lettering sample.",
-  "One single emblem, centred, isolated, with a generous white margin on all four sides.",
-  "No gradients, no shading, no highlights, no drop shadows, no bevels, no texture, no metallic render.",
-  "No refined styling, no polished jewellery finish, no fine stationery lettering, no decorative flourish of any kind.",
-  "No extra borders, frames, ornaments or background scene beyond the requested emblem.",
-  "No additional letters, words, numbers, watermark or signature.",
-].join(" ");
-
-const ART_HERALDIC_NOTE =
-  "This heraldic family is the only one allowed a shield or a top element, and both stay cattle-breeding forge work: any top piece is a welded horizontal iron bar with square merlons cut from the same pletina, a solid black metal bar with no floating points, no pearls and no rounded spikes.";
+const ART_HERALDIC_CORE = ART_DIRECTION_CORE.replace(/\.$/, ", no floating points.");
 
 const POISON_REPLACEMENTS: ReadonlyArray<readonly [RegExp, string]> = [
   [/\bcoat of arms\b/gi, "emblem"],
@@ -215,63 +191,22 @@ export function sanitizeArtPrompt(prompt: string, style: ForgeStyle): string {
   return clean.replace(/\s+/g, " ").trim();
 }
 
-const ART_STYLE_BRIEF: Record<ForgeStyle, string> = {
-  tradicional:
-    "traditional Spanish ganaderia iron: thick uniform pletina, straight stems, one welded silhouette, no outer frame",
-  monograma:
-    "bare interlocking monogram: the initials fused into one continuous welded mark, no outer frame, no arch over the letters, no top element",
-  geometrico:
-    "dry industrial ranch geometry: straight monoline bars, strict mirror symmetry, every junction welded and every terminal cut square",
-  heraldico:
-    "forged cattle shield: one welded iron outline with a crenellated top bar cut from the same strip, solid black metalwork, never a jewellery crown",
-};
-
-const ART_USE_BRIEF: Record<UseCaseKey, string> = {
-  fuego: "branding iron burnt into hide: heavy pletina, rounded weld joints, readable at 25 cm",
-  nitrogeno: "freeze brand: single lighter line weight, wide counters that stay legible on dark hide",
-  bordado_oro: "stitched thread work on a bullfighter's cape and polo shirt: filled shapes with holes wide enough for needle and thread",
-  piel: "burnt leather stamp and carved wood: chunky counters that survive heat and compression",
-};
-
-const ART_PROFILE_BRIEF: Record<ProfileType, string> = {
-  novillero: "personal mark of a bullfighter, readable at a distance on cape and polo shirt",
-  ganaderia: "livestock brand for a fighting bull ranch or a PRE stud farm",
-  particular: "family seal for a country estate, its gate and its tack room",
-};
-
-const ART_CHARACTER_BRIEF: Record<(typeof CHARACTER_TYPES)[number], string> = {
-  sobrio: "sober and plain",
-  senorial: "solemn and grounded",
-  agresivo: "harsh and angular",
-  minimalista: "pared down to bare iron bars",
-};
-
-const ART_REMATE_BRIEF: Record<(typeof REMATE_TYPES)[number], string> = {
-  cruz: "a small forge cross of two welded bars on top",
-  corona: "a welded crenellated iron bar on top with four square merlons cut from the same strip",
-  arco: "one open welded iron arch over the initials",
-  "sin-remate": "no top element, bare initials only",
-};
-
 const tradicionalRecipes: readonly [ArtRecipe, ArtRecipe, ArtRecipe] = [
   {
     key: "asa_de_caldera",
-    prompt:
-      "Morphology (Asa de caldera): the initials sit inside one inverted omega arch of welded iron strip that leaves a wide open mouth at the base, with a small simple forge cross of two welded bars at the apex, all cut from the same uniform strip and welded as one troquel, no outer frame.",
+    prompt: "Open iron horseshoe arch, small forge cross welded at the apex.",
     description:
       "Asa de caldera: las iniciales se inscriben en un arco de herradura de pletina soldada, rematado por una cruz de forja de dos palos.",
   },
   {
     key: "arco_ganadero",
-    prompt:
-      "Morphology (Arco ganadero): a single open iron arch bridges over the top of the initials, its two feet opening into plain fork or fish-tail welds, the letters welded hanging from the arch, no frame and nothing above the arch.",
+    prompt: "Single open arch over the letters, feet opening into forked welds.",
     description:
       "Arco ganadero y espuela: un arco abierto de hierro monta sobre las iniciales y sus pies se abren en horquilla de forja.",
   },
   {
     key: "forja_de_yunque",
-    prompt:
-      "Morphology (Forja de yunque): bare thick initials of uniform iron bar joined by one central crossbar, every bar end cut into a flat anvil flare, no arch, no frame, no top element.",
+    prompt: "Thick bare initials joined by one central crossbar, flat anvil ends.",
     description:
       "Forja de yunque: iniciales desnudas de barra gruesa unidas por un travesaño central, con remates planos de yunque.",
   },
@@ -280,22 +215,19 @@ const tradicionalRecipes: readonly [ArtRecipe, ArtRecipe, ArtRecipe] = [
 const monogramaRecipes: readonly [ArtRecipe, ArtRecipe, ArtRecipe] = [
   {
     key: "asta_compartida",
-    prompt:
-      "Morphology (Asta compartida): both initials fused so they share one continuous vertical or diagonal iron stem, one single welded line for the whole lock-up, no frame, no top element.",
+    prompt: "Both initials sharing one continuous vertical stem, a single welded line.",
     description:
       "Asta compartida: las iniciales se funden compartiendo un mismo palo vertical de hierro continuo.",
   },
   {
     key: "inicial_abrazada",
-    prompt:
-      "Morphology (Inicial abrazada): the first letter enlarged in an open curve that wraps the second letter inside its open bowl, both welded at two contact points, bare initials only, no frame, no top element.",
+    prompt: "First letter curving open to wrap the second inside its bowl.",
     description:
       "Inicial abrazada: la primera letra crece en curva abierta y abraza a la segunda dentro de su seno.",
   },
   {
     key: "enlazado_vertical",
-    prompt:
-      "Morphology (Enlazado vertical): the initials stacked down one vertical axis and linked by a single continuous welded stroke, no frame, no outer shape, no top element.",
+    prompt: "Initials stacked on one vertical axis, linked by a welded stroke.",
     description:
       "Enlazado vertical: las letras se encadenan en eje vertical mediante un único trazo soldado.",
   },
@@ -304,22 +236,19 @@ const monogramaRecipes: readonly [ArtRecipe, ArtRecipe, ArtRecipe] = [
 const geometricoRecipes: readonly [ArtRecipe, ArtRecipe, ArtRecipe] = [
   {
     key: "circulo_cortado",
-    prompt:
-      "Morphology (Circulo cortado): monoline initials in straight iron bars inside a single iron ring interrupted by four symmetrical cuts, ring and letters welded as one piece, every stroke the same width.",
+    prompt: "Straight-bar initials inside one iron ring cut by four gaps.",
     description:
       "Círculo cortado: iniciales en barra recta dentro de un anillo de hierro con cuatro cortes simétricos.",
   },
   {
     key: "ovalo_y_barra",
-    prompt:
-      "Morphology (Ovalo y barra): symmetrical composition enclosed by a pointed oval or closed by one horizontal forged crossbar, everything on a strict centre axis with square-cut welds.",
+    prompt: "Pointed oval closing symmetrical initials with one horizontal forged crossbar.",
     description:
       "Óvalo y barra: composición simétrica cerrada por un óvalo apuntado y un travesaño horizontal de forja.",
   },
   {
     key: "trazo_anguloso",
-    prompt:
-      "Morphology (Trazo anguloso): purely geometric fusion of straight iron bars, every terminal cut dead square, rigorous mirror symmetry, no curve at all.",
+    prompt: "Pure straight iron bars, square-cut terminals, rigorous mirror symmetry.",
     description:
       "Trazo anguloso: fusión de barras rectas con remates cortados en seco y simetría rigurosa.",
   },
@@ -328,22 +257,19 @@ const geometricoRecipes: readonly [ArtRecipe, ArtRecipe, ArtRecipe] = [
 const heraldicoRecipes: readonly [ArtRecipe, ArtRecipe, ArtRecipe] = [
   {
     key: "escudo_almenado",
-    prompt:
-      "Morphology (Escudo almenado): a classic round-bottom Spanish shield outlined in uniform iron bar, closed at the top by a welded horizontal bar carrying three straight rectangular merlons, the initials welded inside the shield.",
+    prompt: "Round-bottom shield, three square welded merlons on top.",
     description:
       "Escudo español almenado: escudo de base redondeada en barra de hierro con tres almenas rectas soldadas en su remate.",
   },
   {
     key: "escudo_apuntado",
-    prompt:
-      "Morphology (Escudo apuntado): a pointed-bottom cattle shield drawn in one continuous thick stroke that frames the welded initials, closed solid silhouette with open counters.",
+    prompt: "Pointed cattle shield framing welded initials, open counters.",
     description:
       "Escudo apuntado: escudo ganadero de punta inferior en trazo grueso continuo que enmarca las iniciales.",
   },
   {
     key: "almenado_sin_escudo",
-    prompt:
-      "Morphology (Hierro almenado sin escudo): free forged initials topped directly by a crenellated iron crown bar of four square merlons welded onto the top stroke, no shield outline.",
+    prompt: "Welded initials under a four-merlon bar, no shield.",
     description:
       "Hierro almenado sin escudo: iniciales forjadas libres rematadas por una barra de cuatro almenas cuadradas.",
   },
@@ -356,81 +282,19 @@ export const ART_RECIPES: Record<ForgeStyle, readonly [ArtRecipe, ArtRecipe, Art
   heraldico: heraldicoRecipes,
 };
 
-export function buildVariantPrompts(base: string, style: ForgeStyle): string[] {
-  return ART_RECIPES[style].map((recipe) => enforceArtContract(`${base} ${recipe.prompt}`, style));
+function initialsClause(label: string): string {
+  return `Featuring the exact bold capital letters "${label.toUpperCase()}" clearly readable and harmoniously integrated.`;
 }
 
-const ART_DIRECTION_SYSTEM_PROMPT = `Eres el director de arte de MI HIERRO. Traduces una ficha de hierro a un prompt técnico en inglés para un generador de imágenes con estilo entrenado.
-Devuelve únicamente el prompt en inglés, sin explicaciones, sin viñetas y sin comillas.
-Describe una única silueta plana de hierro ganadero español forjado, nunca un logotipo de hotel, moda o joyería.
-Contrato físico obligatorio del prompt: ${FORGE_PHYSICS.join(" ")}
-Exige negro puro #000000 sobre blanco puro #FFFFFF, pletina de grosor uniforme, piezas soldadas en un solo troquel, huecos internos abiertos, sin degradados, sin sombras, sin texturas, sin bordes extra y sin letras distintas a las iniciales.
-Nunca escribas palabras de lujo o joyería: nada de luxury, royal, king, queen, boutique, fashion, crest, coat of arms, gold, embroidery, matador, serif, ornate ni badge, y tampoco coronas salvo en un hierro heráldico almenado.`;
+function compactArtPrompt(label: string, style: ForgeStyle, recipe: string): string {
+  const core = style === "heraldico" ? ART_HERALDIC_CORE : ART_DIRECTION_CORE;
+  return sanitizeArtPrompt(`${initialsClause(label)} ${core} ${recipe}`, style);
+}
 
-const ART_PROMPT_TAIL =
-  "Render it as a flat single-colour black ink mark ready for vector tracing, with no anti-aliased grey edges.";
-
-function enforceArtContract(prompt: string, style: ForgeStyle): string {
-  const base = sanitizeArtPrompt(prompt, style);
-  const physics = style === "heraldico" ? `${ART_CONTRACT} ${ART_HERALDIC_NOTE}` : ART_CONTRACT;
-  const heraldicReady = style !== "heraldico" || base.includes("no floating points");
-  if (base.includes("wrought-iron metal strip") && base.includes("pletina de forja") && heraldicReady) return base;
-  return sanitizeArtPrompt(`${base.replace(/[.\s]+$/, "")}. ${physics} ${ART_PROMPT_TAIL}`, style);
+export function buildVariantPrompts(input: { initials: InitialsCombination; style: ForgeStyle }): string[] {
+  return ART_RECIPES[input.style].map((recipe) => compactArtPrompt(input.initials.label, input.style, recipe.prompt));
 }
 
 export function buildDeterministicArtPrompt(input: ArtDirectionInput): string {
-  const letters = input.initials.letters.join(" ");
-  const origin = input.profile.origin ? ` from ${input.profile.origin}` : "";
-  const notes = input.notes ? ` Client notes: ${input.notes}.` : "";
-  const remate =
-    input.style === "monograma" || input.style === "geometrico"
-      ? ART_REMATE_BRIEF["sin-remate"]
-      : ART_REMATE_BRIEF[input.profile.remate];
-  const core = [
-    `Design a ${input.style} cattle branding iron mark for ${ART_PROFILE_BRIEF[input.profile.profile]}${origin}.`,
-    `Initials: exactly ${letters}, nothing else.`,
-    `Style direction: ${ART_STYLE_BRIEF[input.style]}.`,
-    `Physical use: ${ART_USE_BRIEF[input.use]}.`,
-    `Temperament: ${ART_CHARACTER_BRIEF[input.profile.character]}, finished with ${remate}.`,
-    notes,
-  ]
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim();
-  return enforceArtContract(core, input.style);
-}
-
-export async function buildArtDirectionPrompt(input: ArtDirectionInput): Promise<ArtDirection> {
-  const fallbackPrompt = buildDeterministicArtPrompt(input);
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return { prompt: fallbackPrompt, source: "deterministic" };
-
-  try {
-    const client = new GoogleGenAI({ apiKey });
-    const response = await client.models.generateContent({
-      model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
-      contents: `${ART_DIRECTION_SYSTEM_PROMPT}
-
-Ficha de hierro:
-Perfil: ${input.profile.profile}
-Nombre: ${input.profile.firstName} ${input.profile.lastName1}
-Procedencia: ${input.profile.origin || "no indicada"}
-Carácter: ${input.profile.character}
-Remate: ${input.profile.remate}
-Iniciales: ${input.initials.letters.join("")}
-Estilo: ${input.style}
-Uso físico: ${input.use}
-Notas: ${input.notes || "ninguna"}`,
-      config: {
-        temperature: 0.7,
-        maxOutputTokens: 500,
-      },
-    });
-
-    const text = (response.text ?? "").trim();
-    if (text.length < 60) return { prompt: fallbackPrompt, source: "deterministic" };
-    return { prompt: enforceArtContract(text.slice(0, 1200), input.style), source: "gemini" };
-  } catch {
-    return { prompt: fallbackPrompt, source: "deterministic" };
-  }
+  return compactArtPrompt(input.initials.label, input.style, ART_RECIPES[input.style][0].prompt);
 }
