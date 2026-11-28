@@ -47,7 +47,7 @@ beforeAll(async () => {
     nickname: "",
     origin: "Sevilla",
     character: "sobrio",
-    remate: "cruz",
+    remate: "cruz-forja",
     initials: "JGM",
     style: "tradicional",
     blueprint,

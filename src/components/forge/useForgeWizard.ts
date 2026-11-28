@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   generateResponseSchema,
+  remateForStyle,
   userProfileSchema,
   type ForgeProposal,
   type InitialsCombination,
@@ -42,6 +43,15 @@ interface UseForgeWizardOptions {
   canceled?: boolean;
 }
 
+export interface ForgeSessionInfo {
+  userId: string;
+  activePack: "FREE" | "PACK_999" | "PACK_1990" | "FORJA";
+  creditsLimit: number;
+  creditsUsed: number;
+  creditsRemaining: number | null;
+  unlimited: boolean;
+}
+
 export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWizardOptions) {
   const [draft, setDraft] = useState<WizardDraft>(() => createDraft(initialProfile));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -50,6 +60,7 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [generateRateLimited, setGenerateRateLimited] = useState(false);
   const [remainingToday, setRemainingToday] = useState<number | null>(null);
+  const [session, setSession] = useState<ForgeSessionInfo | null>(null);
   const [savedProposals, setSavedProposals] = useState<ForgeProposal[]>([]);
   const [texture, setTexture] = useState<ForgeTexture>(() => defaultTextureForProfile(initialProfile));
   const [demoMode, setDemoMode] = useState<DemoPackMode>("free");
@@ -65,6 +76,21 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
   const [leadFeedback, setLeadFeedback] = useState<LeadFeedback | null>(null);
 
   const previousProfileRef = useRef<ProfileType>(initialProfile);
+
+  const refreshSession = useCallback(async () => {
+    try {
+      const response = await fetch("/api/session", { cache: "no-store" });
+      if (!response.ok) return;
+      const data = (await response.json()) as { user?: ForgeSessionInfo };
+      if (data.user) setSession(data.user);
+    } catch {
+      return;
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshSession();
+  }, [refreshSession]);
 
   useEffect(() => {
     if (previousProfileRef.current !== initialProfile) {
@@ -95,6 +121,7 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
           setTexture(defaultTextureForProfile(initialProfile));
         } else if (parsed && typeof parsed.step === "number" && parsed.step >= 1 && parsed.step <= 5) {
           const restored = { ...createDraft(initialProfile), ...parsed };
+          restored.remate = remateForStyle(restored.style, restored.remate);
           setDraft(restored);
           if (restored.proposals.length > 0) {
             setSavedProposals(restored.proposals);
@@ -171,6 +198,9 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
         setSavedProposals(previous.proposals);
       }
       const next = { ...previous, ...patch };
+      if (patch.style) {
+        next.remate = remateForStyle(patch.style, next.remate);
+      }
 
       if ("profile" in patch && patch.profile !== previous.profile) {
         const fresh = createDraft(patch.profile!);
@@ -286,6 +316,7 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
           profile: parsedProfile.data,
           initials: selectedCombination,
           style: draft.style,
+          notes: draft.notes.trim() || undefined,
         }),
       });
 
@@ -302,6 +333,7 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
         setGenerateError(message);
         setGenerateRateLimited(isLimited);
         if (isLimited) setRemainingToday(0);
+        void refreshSession();
         toast.error(message);
         return;
       }
@@ -315,6 +347,7 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
       }
 
       setRemainingToday(parsed.data.remainingToday);
+      void refreshSession();
       setSavedProposals(parsed.data.proposals);
       setDraft((previous) => ({
         ...previous,
@@ -486,6 +519,8 @@ export function useForgeWizard({ initialProfile, canceled = false }: UseForgeWiz
     generateError,
     generateRateLimited,
     remainingToday,
+    session,
+    refreshSession,
     hasSavedProposals: savedProposals.length > 0 && draft.proposals.length === 0,
     texture,
     setTexture,

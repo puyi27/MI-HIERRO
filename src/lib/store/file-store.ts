@@ -3,13 +3,16 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 import type {
   CreateDesignInput,
+  CreateForgeUserInput,
   CreateLeadInput,
   CreateOrderInput,
   DesignRecord,
   ForgeStore,
+  ForgeUserRecord,
   LeadRecord,
   OrderRecord,
   SimilarityRequestRecord,
+  UpdateForgeUserInput,
 } from "@/lib/store/types";
 
 interface DatabaseShape {
@@ -17,9 +20,10 @@ interface DatabaseShape {
   orders: OrderRecord[];
   reports: SimilarityRequestRecord[];
   leads: LeadRecord[];
+  users: ForgeUserRecord[];
 }
 
-const EMPTY_DATABASE: DatabaseShape = { designs: [], orders: [], reports: [], leads: [] };
+const EMPTY_DATABASE: DatabaseShape = { designs: [], orders: [], reports: [], leads: [], users: [] };
 
 let writeChain: Promise<unknown> = Promise.resolve();
 
@@ -36,9 +40,10 @@ async function readDatabase(): Promise<DatabaseShape> {
       orders: parsed.orders ?? [],
       reports: parsed.reports ?? [],
       leads: parsed.leads ?? [],
+      users: parsed.users ?? [],
     };
   } catch {
-    return { ...EMPTY_DATABASE, designs: [], orders: [], reports: [], leads: [] };
+    return { ...EMPTY_DATABASE, designs: [], orders: [], reports: [], leads: [], users: [] };
   }
 }
 
@@ -81,6 +86,7 @@ export const fileStore: ForgeStore = {
         previewKey: null,
         scores: input.scores,
         lore: input.lore,
+        userId: input.userId ?? null,
         createdAt: new Date().toISOString(),
       };
       database.designs.push(record);
@@ -232,5 +238,77 @@ export const fileStore: ForgeStore = {
       report.status = status;
       return report;
     });
+  },
+
+  async createForgeUser(input: CreateForgeUserInput) {
+    return mutate((database) => {
+      const now = new Date().toISOString();
+      const record: ForgeUserRecord = {
+        id: randomUUID(),
+        sessionToken: input.sessionToken,
+        email: input.email ?? null,
+        name: input.name ?? null,
+        activePack: input.activePack ?? "FREE",
+        creditsLimit: input.creditsLimit ?? 2,
+        creditsUsed: input.creditsUsed ?? 0,
+        unlimited: input.unlimited ?? false,
+        createdAt: now,
+        updatedAt: now,
+      };
+      database.users.push(record);
+      return record;
+    });
+  },
+
+  async getForgeUser(id: string) {
+    const database = await readDatabase();
+    return database.users.find((user) => user.id === id) ?? null;
+  },
+
+  async getForgeUserByToken(sessionToken: string) {
+    const database = await readDatabase();
+    return database.users.find((user) => user.sessionToken === sessionToken) ?? null;
+  },
+
+  async updateForgeUser(id: string, patch: UpdateForgeUserInput) {
+    return mutate((database) => {
+      const user = database.users.find((item) => item.id === id);
+      if (!user) return null;
+      if (patch.email !== undefined) user.email = patch.email;
+      if (patch.name !== undefined) user.name = patch.name;
+      if (patch.activePack !== undefined) user.activePack = patch.activePack;
+      if (patch.creditsLimit !== undefined) user.creditsLimit = patch.creditsLimit;
+      if (patch.creditsUsed !== undefined) user.creditsUsed = patch.creditsUsed;
+      if (patch.unlimited !== undefined) user.unlimited = patch.unlimited;
+      user.updatedAt = new Date().toISOString();
+      return user;
+    });
+  },
+
+  async consumeForgeCredit(id: string) {
+    return mutate((database) => {
+      const user = database.users.find((item) => item.id === id);
+      if (!user) return null;
+      if (user.unlimited) return user;
+      if (user.creditsUsed >= user.creditsLimit) return null;
+      user.creditsUsed += 1;
+      user.updatedAt = new Date().toISOString();
+      return user;
+    });
+  },
+
+  async listForgeUsers(limit = 100) {
+    const database = await readDatabase();
+    return [...database.users]
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+      .slice(0, limit);
+  },
+
+  async listDesignsForUser(userId: string, limit = 20) {
+    const database = await readDatabase();
+    return [...database.designs]
+      .filter((design) => design.userId === userId)
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+      .slice(0, limit);
   },
 };

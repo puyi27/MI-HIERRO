@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createDraft, type WizardDraft } from "@/components/forge/types";
+import { remateForStyle } from "@/types/forge";
 
 function simulateUpdate(draft: WizardDraft, patch: Partial<WizardDraft>): WizardDraft {
   const next = { ...draft, ...patch };
@@ -126,5 +127,15 @@ describe("Wizard reset on profile change", () => {
     expect(fresh.proposals).toHaveLength(0);
     expect(fresh.selectedProposalId).toBeNull();
     expect(fresh.email).toBe("");
+    expect(fresh.notes).toBe("");
+    expect(fresh.remate).toBe("auto");
+  });
+
+  it("conserva el remate solo cuando pertenece a la familia elegida", () => {
+    expect(remateForStyle("tradicional", "cruz-forja")).toBe("cruz-forja");
+    expect(remateForStyle("monograma", "asta-compartida")).toBe("asta-compartida");
+    expect(remateForStyle("monograma", "cruz-forja")).toBe("auto");
+    expect(remateForStyle("heraldico", "escudo-espanol")).toBe("escudo-espanol");
+    expect(remateForStyle("geometrico", "barra-almenada")).toBe("auto");
   });
 });

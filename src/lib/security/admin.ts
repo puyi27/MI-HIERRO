@@ -34,6 +34,26 @@ export function createAdminSession(): { value: string; maxAge: number } {
   return { value: `${expiresAt}.${sign(expiresAt)}`, maxAge: SESSION_TTL_SECONDS };
 }
 
+export function readAdminCookie(request: Request): string | null {
+  const header = request.headers.get("cookie");
+  if (!header) return null;
+  for (const part of header.split(";")) {
+    const trimmed = part.trim();
+    if (!trimmed.startsWith(`${ADMIN_COOKIE}=`)) continue;
+    const raw = trimmed.slice(ADMIN_COOKIE.length + 1);
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return raw;
+    }
+  }
+  return null;
+}
+
+export function isAdminRequest(request: Request): boolean {
+  return verifyAdminSession(readAdminCookie(request));
+}
+
 export function verifyAdminSession(value: string | undefined | null): boolean {
   if (!value) return false;
   try {

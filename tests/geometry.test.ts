@@ -11,7 +11,7 @@ const profile = userProfileSchema.parse({
   lastName2: "Moreno",
   origin: "Salamanca",
   character: "senorial",
-  remate: "corona",
+  remate: "cruz-forja",
 });
 
 const INITIAL_SETS = [["G"], ["A", "P"], ["C", "R"], ["J", "M", "R"]];

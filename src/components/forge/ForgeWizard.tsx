@@ -26,6 +26,7 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
     generateError,
     generateRateLimited,
     remainingToday,
+    session,
     hasSavedProposals,
     texture,
     setTexture,
@@ -81,6 +82,7 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
             error={generateError}
             rateLimited={generateRateLimited}
             remainingToday={remainingToday}
+            session={session}
             hasSavedProposals={hasSavedProposals}
             onRestoreSaved={wizard.restoreSavedProposals}
             onGoToDelivery={() => {
@@ -94,6 +96,10 @@ export function ForgeWizard({ initialProfile, canceled = false }: ForgeWizardPro
             onSelectProposal={wizard.selectProposal}
             initialsLabel={selectedCombination?.label ?? ""}
             divisaId={draft.divisaId}
+            notes={draft.notes}
+            onNotesChange={(notes) => wizard.update({ notes })}
+            remate={draft.remate}
+            onRemateChange={(remate) => wizard.update({ remate })}
           />
         ) : null}
 

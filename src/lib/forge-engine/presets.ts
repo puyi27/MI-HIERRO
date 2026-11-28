@@ -77,12 +77,15 @@ const CHARACTER_STROKE: Record<CharacterType, number> = {
 
 export function ornamentForRemate(remate: RemateType): OrnamentKey {
   switch (remate) {
-    case "cruz":
-      return "cross";
-    case "corona":
-      return "crown";
-    case "arco":
+    case "asa-caldera":
+    case "arco-ganadero":
       return "arch";
+    case "cruz-forja":
+      return "cross";
+    case "escudo-espanol":
+    case "escudo-apuntado":
+    case "barra-almenada":
+      return "shield";
     default:
       return "none";
   }
@@ -90,12 +93,14 @@ export function ornamentForRemate(remate: RemateType): OrnamentKey {
 
 export function ornamentV2ForRemate(remate: RemateType): OrnamentV2Key {
   switch (remate) {
-    case "cruz":
-      return "cruz_forja";
-    case "corona":
-      return "corona_abierta";
-    case "arco":
+    case "asa-caldera":
+      return "asa_caldera";
+    case "arco-ganadero":
       return "arco_portico";
+    case "cruz-forja":
+      return "cruz_forja";
+    case "barra-almenada":
+      return "doble_barra";
     default:
       return "none";
   }
@@ -146,8 +151,17 @@ export function resolveBlueprint(
   const variant = preset.variants[variantIndex % preset.variants.length];
   const remateOrnament = ornamentForRemate(profile.remate);
   const remateV2 = ornamentV2ForRemate(profile.remate);
-  const ornament = variant.ornament === "none" ? remateOrnament : variant.ornament;
-  const ornamentV2 = variant.ornamentV2 === "none" ? remateV2 : variant.ornamentV2;
+  const explicitRemate = profile.remate !== "auto";
+  const ornament = explicitRemate
+    ? remateOrnament
+    : variant.ornament === "none"
+      ? remateOrnament
+      : variant.ornament;
+  const ornamentV2 = explicitRemate
+    ? remateV2
+    : variant.ornamentV2 === "none"
+      ? remateV2
+      : variant.ornamentV2;
   const architecture = selectArchitectureForLetters(variant.architecture, combination, variantIndex);
   const strokeWidth = Math.max(
     6,

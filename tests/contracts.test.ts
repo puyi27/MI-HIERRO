@@ -13,7 +13,7 @@ const validProfile = {
   lastName2: "",
   origin: "",
   character: "sobrio",
-  remate: "cruz",
+  remate: "cruz-forja",
 };
 
 describe("contratos de perfil", () => {

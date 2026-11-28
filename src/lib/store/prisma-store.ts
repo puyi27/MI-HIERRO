@@ -1,13 +1,17 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import type {
+  ActivePack,
   CreateDesignInput,
+  CreateForgeUserInput,
   CreateLeadInput,
   CreateOrderInput,
   DesignRecord,
   ForgeStore,
+  ForgeUserRecord,
   LeadRecord,
   OrderRecord,
   SimilarityRequestRecord,
+  UpdateForgeUserInput,
 } from "@/lib/store/types";
 import type { BrandBlueprint, DesignScores, ForgeStyle, ProfileType } from "@/types/forge";
 
@@ -38,6 +42,7 @@ function designRecord(design: {
   previewKey: string | null;
   scores: Prisma.JsonValue;
   lore: string;
+  userId?: string | null;
   createdAt: Date;
 }): DesignRecord {
   return {
@@ -59,7 +64,34 @@ function designRecord(design: {
     previewKey: design.previewKey,
     scores: design.scores as unknown as DesignScores,
     lore: design.lore,
+    userId: design.userId ?? null,
     createdAt: design.createdAt.toISOString(),
+  };
+}
+
+function forgeUserRecord(user: {
+  id: string;
+  sessionToken: string;
+  email: string | null;
+  name: string | null;
+  activePack: string;
+  creditsLimit: number;
+  creditsUsed: number;
+  unlimited: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}): ForgeUserRecord {
+  return {
+    id: user.id,
+    sessionToken: user.sessionToken,
+    email: user.email,
+    name: user.name,
+    activePack: user.activePack as ActivePack,
+    creditsLimit: user.creditsLimit,
+    creditsUsed: user.creditsUsed,
+    unlimited: user.unlimited,
+    createdAt: user.createdAt.toISOString(),
+    updatedAt: user.updatedAt.toISOString(),
   };
 }
 
@@ -115,6 +147,7 @@ export const prismaStore: ForgeStore = {
         generationKey: input.generationKey ?? null,
         scores: toJson(input.scores),
         lore: input.lore,
+        userId: input.userId ?? null,
       },
     });
     return designRecord(created);
@@ -303,6 +336,74 @@ export const prismaStore: ForgeStore = {
       notes: updated.notes,
       createdAt: updated.createdAt.toISOString(),
     };
+  },
+
+  async createForgeUser(input: CreateForgeUserInput) {
+    const created = await prisma.forgeUser.create({
+      data: {
+        sessionToken: input.sessionToken,
+        email: input.email ?? null,
+        name: input.name ?? null,
+        activePack: (input.activePack ?? "FREE") as ActivePack,
+        creditsLimit: input.creditsLimit ?? 2,
+        creditsUsed: input.creditsUsed ?? 0,
+        unlimited: input.unlimited ?? false,
+      },
+    });
+    return forgeUserRecord(created);
+  },
+
+  async getForgeUser(id: string) {
+    const user = await prisma.forgeUser.findUnique({ where: { id } });
+    return user ? forgeUserRecord(user) : null;
+  },
+
+  async getForgeUserByToken(sessionToken: string) {
+    const user = await prisma.forgeUser.findUnique({ where: { sessionToken } });
+    return user ? forgeUserRecord(user) : null;
+  },
+
+  async updateForgeUser(id: string, patch: UpdateForgeUserInput) {
+    const existing = await prisma.forgeUser.findUnique({ where: { id } });
+    if (!existing) return null;
+    const updated = await prisma.forgeUser.update({
+      where: { id },
+      data: {
+        email: patch.email,
+        name: patch.name,
+        activePack: patch.activePack as ActivePack | undefined,
+        creditsLimit: patch.creditsLimit,
+        creditsUsed: patch.creditsUsed,
+        unlimited: patch.unlimited,
+      },
+    });
+    return forgeUserRecord(updated);
+  },
+
+  async consumeForgeCredit(id: string) {
+    const user = await prisma.forgeUser.findUnique({ where: { id } });
+    if (!user) return null;
+    if (user.unlimited) return forgeUserRecord(user);
+    if (user.creditsUsed >= user.creditsLimit) return null;
+    const updated = await prisma.forgeUser.update({
+      where: { id },
+      data: { creditsUsed: { increment: 1 } },
+    });
+    return forgeUserRecord(updated);
+  },
+
+  async listForgeUsers(limit = 100) {
+    const users = await prisma.forgeUser.findMany({ orderBy: { createdAt: "desc" }, take: limit });
+    return users.map(forgeUserRecord);
+  },
+
+  async listDesignsForUser(userId: string, limit = 20) {
+    const designs = await prisma.design.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
+    return designs.map(designRecord);
   },
 };
 

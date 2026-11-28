@@ -20,7 +20,7 @@ const payload = {
     lastName2: "Moreno",
     origin: "Salamanca",
     character: "senorial",
-    remate: "corona",
+    remate: "cruz-forja",
   },
   initials: {
     id: "dos-JG",

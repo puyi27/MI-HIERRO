@@ -39,7 +39,7 @@ beforeAll(async () => {
     lastName2: "Moreno",
     origin: "Salamanca",
     character: "senorial",
-    remate: "corona",
+    remate: "cruz-forja",
   });
   const initials = initialsCombinationSchema.parse({
     id: "dos-JG",
@@ -81,7 +81,7 @@ beforeAll(async () => {
     nickname: "",
     origin: "Jerez",
     character: "sobrio",
-    remate: "cruz",
+    remate: "cruz-forja",
     initials: "AD",
     style: "heraldico",
     blueprint,

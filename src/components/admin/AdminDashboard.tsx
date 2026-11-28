@@ -1,12 +1,18 @@
-import { Download, FileText, Hammer, Inbox } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { Download, FileText, Hammer, Inbox, Users } from "lucide-react";
 import type { LeadRecord, OrderRecord, SimilarityRequestRecord } from "@/lib/store/types";
 import { AdminLogout } from "@/components/admin/AdminLogout";
 import { ReportStatusControl } from "@/components/admin/ReportStatusControl";
+import { UsersPackPanel, type AdminUser } from "@/components/admin/UsersPackPanel";
+import { AdminSessionPanel } from "@/components/admin/AdminSessionPanel";
 
 interface AdminDashboardProps {
   orders: OrderRecord[];
   leads: LeadRecord[];
   reports: SimilarityRequestRecord[];
+  users: AdminUser[];
   storeDriver: string;
   storeError: string | null;
 }
@@ -42,7 +48,8 @@ function Empty({ message }: { message: string }) {
   return <p className="px-4 py-6 text-xs text-forge-graphite">{message}</p>;
 }
 
-export function AdminDashboard({ orders, leads, reports, storeDriver, storeError }: AdminDashboardProps) {
+export function AdminDashboard({ orders, leads, reports, users, storeDriver, storeError }: AdminDashboardProps) {
+  const [tab, setTab] = useState<"ops" | "users">("ops");
   const paidOrders = orders.filter((order) => order.status === "paid");
   const revenue = paidOrders.reduce((total, order) => total + order.amountCents, 0);
   const openReports = reports.filter((report) => report.status !== "delivered").length;
@@ -61,12 +68,44 @@ export function AdminDashboard({ orders, leads, reports, storeDriver, storeError
         <AdminLogout />
       </div>
 
+      <AdminSessionPanel />
+
       {storeError ? (
         <div role="alert" className="mt-6 border border-forge-grana/40 bg-forge-grana/5 p-4 text-xs text-forge-grana">
           El almacén no responde: {storeError}. Revisa DATABASE_URL.
         </div>
       ) : null}
 
+      <div className="mt-6 flex flex-wrap gap-2 border-b border-forge-border" role="tablist" aria-label="Secciones del panel">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "ops"}
+          onClick={() => setTab("ops")}
+          className={`-mb-px border-b-2 px-3 py-2 text-[0.62rem] uppercase tracking-[0.16em] transition ${
+            tab === "ops" ? "border-forge-grana text-forge-grana" : "border-transparent text-forge-graphite hover:text-forge-ink"
+          }`}
+        >
+          Operativa
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "users"}
+          onClick={() => setTab("users")}
+          className={`-mb-px flex items-center gap-1.5 border-b-2 px-3 py-2 text-[0.62rem] uppercase tracking-[0.16em] transition ${
+            tab === "users" ? "border-forge-grana text-forge-grana" : "border-transparent text-forge-graphite hover:text-forge-ink"
+          }`}
+        >
+          <Users className="h-3.5 w-3.5" aria-hidden />
+          Usuarios y Packs
+        </button>
+      </div>
+
+      {tab === "users" ? (
+        <UsersPackPanel initialUsers={users} />
+      ) : (
+        <>
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
         <div className="border border-forge-border bg-forge-white p-5">
           <p className="eyebrow-muted">Ingresos cobrados</p>
@@ -236,6 +275,9 @@ export function AdminDashboard({ orders, leads, reports, storeDriver, storeError
           )}
         </div>
       </section>
+
+        </>
+      )}
 
       <p className="mt-10 border-t border-forge-border pt-5 text-[0.6rem] uppercase tracking-[0.18em] text-forge-graphite">
         MI HIERRO propone y orienta · No certifica disponibilidad registral

@@ -27,7 +27,7 @@ const profile = userProfileSchema.parse({
   lastName2: "Moreno",
   origin: "Salamanca",
   character: "senorial",
-  remate: "corona",
+  remate: "cruz-forja",
 });
 
 const combination = initialsCombinationSchema.parse({
@@ -51,7 +51,7 @@ async function createDesign() {
     nickname: "",
     origin: "Salamanca",
     character: "senorial",
-    remate: "corona",
+    remate: "cruz-forja",
     initials: "JG",
     style: "heraldico",
     blueprint,

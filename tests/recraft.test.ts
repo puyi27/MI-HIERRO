@@ -13,6 +13,20 @@ import { renderStoryCard } from "@/lib/forge-engine/story";
 import { buildDeliveryZip } from "@/lib/stripe/zip";
 import type { DesignRecord } from "@/lib/store/types";
 
+const geminiState = vi.hoisted(() => ({ response: "", fail: false, contents: "" }));
+
+vi.mock("@google/genai", () => ({
+  GoogleGenAI: class {
+    models = {
+      generateContent: async (request: { contents?: unknown }) => {
+        geminiState.contents = String(request.contents ?? "");
+        if (geminiState.fail) throw new Error("gemini unavailable");
+        return { text: geminiState.response };
+      },
+    };
+  },
+}));
+
 const storeFile = path.join(process.cwd(), ".data", `test-recraft-${process.pid}.json`);
 process.env.MI_HIERRO_STORE_FILE = storeFile;
 process.env.RECRAFT_API_KEY = "test-recraft-key";
@@ -27,7 +41,7 @@ delete process.env.UPSTASH_REDIS_REST_TOKEN;
 
 const { POST: generatePost } = await import("@/app/api/generate/route");
 const { GET: previewGet } = await import("@/app/api/preview/route");
-const { ART_RECIPES, buildDeterministicArtPrompt, buildVariantPrompts, sanitizeArtPrompt } = await import("@/lib/ai/gemini");
+const { ART_RECIPES, buildDeterministicArtPrompt, buildVariantPrompts, generateArtDirections, sanitizeArtPrompt, selectArchetypes } = await import("@/lib/ai/gemini");
 const { buildTransparentMask, generateRecraftRaster, vectorizeRecraftImage } = await import("@/lib/ai/recraft");
 const { resetMemoryRateLimit } = await import("@/lib/security/rate-limit");
 
@@ -48,7 +62,7 @@ const profile = userProfileSchema.parse({
   lastName2: "Moreno",
   origin: "Salamanca",
   character: "senorial",
-  remate: "corona",
+  remate: "cruz-forja",
 });
 
 const initials = initialsCombinationSchema.parse({
@@ -99,7 +113,7 @@ function bodyFor(letters: string[], style: ForgeStyle) {
       lastName2: "Moreno",
       origin: "Salamanca",
       character: "senorial",
-      remate: "corona",
+      remate: "cruz-forja",
     },
     initials: {
       id: `dos-${letters.join("")}`,
@@ -140,6 +154,10 @@ afterAll(async () => {
 beforeEach(() => {
   resetMemoryRateLimit();
   fetchMock.mockClear();
+  delete process.env.GEMINI_API_KEY;
+  geminiState.response = "";
+  geminiState.fail = false;
+  geminiState.contents = "";
   process.env.RECRAFT_API_KEY = "test-recraft-key";
   process.env.RECRAFT_STYLE_TRADICIONAL = "style-tradicional";
   process.env.RECRAFT_STYLE_MONOGRAMA = "style-monograma";
@@ -177,13 +195,146 @@ describe("Director de Arte · prompt compacto", () => {
   });
 });
 
+describe("Director de Arte · Gemini estructurado", () => {
+  const promptA =
+    'Featuring the exact bold capital letters "JG" clearly readable and harmoniously integrated. Bold uniform monoline wrought-iron strip, clean symmetry, open internal counters, all pieces welded into one solid silhouette, pure solid black #000000 on pure white #FFFFFF. Open iron horseshoe arch with a simple forge cross at the apex.';
+  const promptB =
+    'Featuring the exact bold capital letters "JG" clearly readable and harmoniously integrated. Bold uniform monoline wrought-iron strip, mirrored proportions, open internal counters, every joint welded into one solid piece, pure solid black #000000 on pure white #FFFFFF. Central anvil crossbar with flat forked ends.';
+  const promptC =
+    'Featuring the exact bold capital letters "JG" clearly readable and harmoniously integrated. Bold uniform monoline wrought-iron strip, crisp sculptural symmetry, open internal counters, all strokes welded into one solid emblem, pure solid black #000000 on pure white #FFFFFF. Shallow crescent base with forged spur terminals.';
+
+  const baseInput = {
+    profile,
+    initials,
+    style: "tradicional" as const,
+    use: "fuego" as const,
+    ornament: "cruz-forja",
+    notes: "Hierro para la puerta de la finca en Salamanca",
+  };
+
+  it("recibe un array JSON de tres direcciones y las entrega listas para Recraft", async () => {
+    process.env.GEMINI_API_KEY = "test-gemini-key";
+    geminiState.response = JSON.stringify([
+      { recipeName: "asa_gemini", lore: "Arco de herradura con cruz de forja simple sobre las iniciales.", recraftPrompt: promptA },
+      { recipeName: "arco_gemini", lore: "Arco abierto con travesaño central y remates de yunque planos.", recraftPrompt: promptB },
+      { recipeName: "yunque_gemini", lore: "Base en media luna con espuelas forjadas en los extremos.", recraftPrompt: promptC },
+    ]);
+
+    const directions = await generateArtDirections(baseInput);
+
+    expect(directions).toHaveLength(3);
+    expect(directions.map((direction) => direction.recipeName)).toEqual([
+      "asa_gemini",
+      "arco_gemini",
+      "yunque_gemini",
+    ]);
+    for (const direction of directions) {
+      const words = direction.recraftPrompt.trim().split(/\s+/);
+      expect(words.length).toBeGreaterThanOrEqual(40);
+      expect(words.length).toBeLessThanOrEqual(55);
+      expect(direction.recraftPrompt.startsWith('Featuring the exact bold capital letters "JG"')).toBe(true);
+      expect(direction.recraftPrompt).toContain("#000000");
+      expect(direction.recraftPrompt).toContain("#FFFFFF");
+      expect(direction.recraftPrompt).toContain("uniform monoline wrought-iron");
+      expect(direction.lore.length).toBeGreaterThan(20);
+    }
+    expect(new Set(directions.map((direction) => direction.recraftPrompt)).size).toBe(3);
+  });
+
+  it("envía el remate elegido a Gemini y libera al maestro cuando es auto", async () => {
+    process.env.GEMINI_API_KEY = "test-gemini-key";
+    geminiState.response = JSON.stringify([
+      { recipeName: "asa_gemini", lore: "Arco de herradura con cruz de forja simple sobre las iniciales.", recraftPrompt: promptA },
+    ]);
+
+    await generateArtDirections({ ...baseInput, ornament: "asa-caldera" });
+    expect(geminiState.contents).toContain("Asa de caldera");
+
+    await generateArtDirections({ ...baseInput, ornament: "auto" });
+    expect(geminiState.contents).toContain("libertad total");
+    expect(geminiState.contents).not.toContain("Asa de caldera");
+  });
+
+  it("cambia la semilla creativa en cada llamada para no repetir estructuras", async () => {
+    process.env.GEMINI_API_KEY = "test-gemini-key";
+    geminiState.response = JSON.stringify([
+      { recipeName: "asa_gemini", lore: "Arco de herradura con cruz de forja simple sobre las iniciales.", recraftPrompt: promptA },
+      { recipeName: "arco_gemini", lore: "Arco abierto con travesaño central y remates de yunque planos.", recraftPrompt: promptB },
+      { recipeName: "yunque_gemini", lore: "Base en media luna con espuelas forjadas en los extremos.", recraftPrompt: promptC },
+    ]);
+
+    await generateArtDirections(baseInput);
+    const first = geminiState.contents;
+    await generateArtDirections(baseInput);
+    const second = geminiState.contents;
+
+    expect(first).toContain("Semilla creativa");
+    expect(second).toContain("Semilla creativa");
+    expect(second).not.toBe(first);
+  });
+
+  it("sanea lujo, joyería y tipografía serif del prompt devuelto por Gemini", async () => {
+    process.env.GEMINI_API_KEY = "test-gemini-key";
+    const dirty =
+      'Featuring the exact bold capital letters "JG" clearly readable and harmoniously integrated. Luxury royal gold embroidery serif crest crown badge, bold uniform monoline wrought-iron strip, clean symmetry, open internal counters, welded into one solid piece, pure solid black #000000 on pure white #FFFFFF, boutique fashion ornament.';
+    geminiState.response = JSON.stringify([
+      { recipeName: "dirty_recipe", lore: "Propuesta saneada para la puerta de la finca.", recraftPrompt: dirty },
+    ]);
+
+    const [direction] = await generateArtDirections(baseInput);
+    const lower = direction.recraftPrompt.toLowerCase();
+
+    for (const word of ["luxury", "royal", "gold", "embroidery", "serif", "crest", "crown", "badge", "boutique"]) {
+      expect(lower).not.toContain(word);
+    }
+    expect(lower).toContain("#000000");
+    expect(lower).toContain("#ffffff");
+    expect(lower).toContain("uniform monoline wrought-iron");
+  });
+
+  it("cae a tres variantes deterministas distintas sin GEMINI_API_KEY", async () => {
+    const input = { ...baseInput, style: "heraldico" as const, ornament: "escudo-espanol" };
+
+    const first = await generateArtDirections(input);
+    const second = await generateArtDirections(input);
+
+    expect(first).toHaveLength(3);
+    expect(new Set(first.map((direction) => direction.recipeName)).size).toBe(3);
+    expect(new Set(first.map((direction) => direction.recraftPrompt)).size).toBe(3);
+    expect(second).toEqual(first);
+    for (const direction of first) {
+      const words = direction.recraftPrompt.trim().split(/\s+/);
+      expect(words.length).toBeGreaterThanOrEqual(40);
+      expect(words.length).toBeLessThanOrEqual(55);
+      expect(direction.recraftPrompt.startsWith('Featuring the exact bold capital letters "JG"')).toBe(true);
+      expect(direction.recraftPrompt).toContain("#000000");
+      expect(direction.recraftPrompt).toContain("#FFFFFF");
+      expect(direction.recraftPrompt.toLowerCase()).not.toContain("crown");
+    }
+  });
+
+  it("cae al fallback determinista si la llamada a Gemini falla", async () => {
+    process.env.GEMINI_API_KEY = "test-gemini-key";
+    geminiState.fail = true;
+
+    const directions = await generateArtDirections(baseInput);
+
+    expect(directions).toHaveLength(3);
+    expect(new Set(directions.map((direction) => direction.recraftPrompt)).size).toBe(3);
+    for (const direction of directions) {
+      expect(direction.recraftPrompt).toContain("#000000");
+      expect(direction.recraftPrompt).toContain("#FFFFFF");
+    }
+  });
+});
+
 describe("Recetas morfológicas · física de forja", () => {
-  it("acota cada prompt final a 45-55 palabras con las iniciales al frente", () => {
+  it("acota cada prompt final a 45-60 palabras con las iniciales al frente", () => {
     for (const style of ["tradicional", "monograma", "geometrico", "heraldico"] as const) {
       for (const prompt of buildVariantPrompts({ initials, style })) {
         const words = prompt.trim().split(/\s+/);
         expect(words.length).toBeGreaterThanOrEqual(45);
-        expect(words.length).toBeLessThanOrEqual(55);
+        expect(words.length).toBeLessThanOrEqual(60);
         expect(prompt.startsWith('Featuring the exact bold capital letters "JG" clearly readable')).toBe(true);
       }
     }
@@ -207,20 +358,21 @@ describe("Recetas morfológicas · física de forja", () => {
     }
   });
 
-  it("reserva el remate almenado de forja para el estilo heráldico", () => {
+  it("reserva el remate almenado de forja para el banco heráldico", () => {
     const heraldic = buildVariantPrompts({ initials, style: "heraldico" });
-    expect(heraldic[0].toLowerCase()).toContain("merlons");
-    expect(heraldic[2].toLowerCase()).toContain("four-merlon");
-    expect(heraldic[2].toLowerCase()).toContain("no shield");
+    const bank = ART_RECIPES.heraldico.map((recipe) => recipe.prompt.toLowerCase()).join(" ");
+    expect(bank).toContain("merlons");
+    expect(bank).toContain("four-merlon");
+    expect(bank).toContain("no shield");
     expect(heraldic.join(" ").toLowerCase()).not.toContain("luxury");
     expect(heraldic.join(" ").toLowerCase()).not.toContain("crown");
     expect(heraldic.join(" ").toLowerCase()).toContain("no floating points");
   });
 
-  it("da una receta y una descripción propias a cada una de las doce propuestas", () => {
+  it("da al menos seis arquetipos y descripciones propias a cada familia", () => {
     const descriptions = new Set<string>();
     for (const style of ["tradicional", "monograma", "geometrico", "heraldico"] as const) {
-      expect(ART_RECIPES[style]).toHaveLength(3);
+      expect(ART_RECIPES[style].length).toBeGreaterThanOrEqual(6);
       for (const recipe of ART_RECIPES[style]) {
         expect(recipe.description.length).toBeGreaterThan(40);
         expect(recipe.description).not.toContain("se corona");
@@ -228,7 +380,18 @@ describe("Recetas morfológicas · física de forja", () => {
         descriptions.add(recipe.description);
       }
     }
-    expect(descriptions.size).toBe(12);
+    expect(descriptions.size).toBe(24);
+  });
+
+  it("elige tres arquetipos distintos al azar sin repetir familia morfológica", () => {
+    const seen = new Set<string>();
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const archetypes = selectArchetypes("tradicional", 3);
+      expect(archetypes).toHaveLength(3);
+      expect(new Set(archetypes.map((item) => item.key)).size).toBe(3);
+      archetypes.forEach((item) => seen.add(item.key));
+    }
+    expect(seen.size).toBeGreaterThan(3);
   });
 
   it("sanea el prompt cuando Gemini o el cliente cuelan palabras de lujo", () => {
@@ -330,19 +493,22 @@ describe("Plan gratuito · cupo y caché", () => {
     expect(generationCalls()).toBe(6);
   });
 
-  it("reutiliza la caché de iniciales, estilo y uso idénticos sin volver a facturar", async () => {
-    const ip = "203.0.113.20";
-
-    const first = await generate(["C", "R"], "monograma", ip);
+  it("forja láminas nuevas en cada llamada aunque repita iniciales, estilo y uso", async () => {
+    const first = await generate(["C", "R"], "monograma", "203.0.113.21");
     expect(first.response.status).toBe(200);
+    expect(first.data.proposals).toHaveLength(3);
     expect(generationCalls()).toBe(3);
 
-    const second = await generate(["C", "R"], "monograma", ip);
+    const second = await generate(["C", "R"], "monograma", "203.0.113.22");
     expect(second.response.status).toBe(200);
     expect(second.data.proposals).toHaveLength(3);
-    expect(generationCalls()).toBe(3);
-    expect(second.data.remainingToday).toBe(first.data.remainingToday);
-    expect(second.data.proposals[0].id).not.toBe(first.data.proposals[0].id);
+    expect(generationCalls()).toBe(6);
+
+    const firstIds = first.data.proposals.map((proposal) => proposal.id);
+    const secondIds = second.data.proposals.map((proposal) => proposal.id);
+    expect(new Set(firstIds).size).toBe(3);
+    expect(new Set(secondIds).size).toBe(3);
+    expect(secondIds.some((id) => firstIds.includes(id))).toBe(false);
   });
 
   it("no filtra SVG limpio, base64 ni datos de Recraft al cliente", async () => {
@@ -381,7 +547,7 @@ describe("Plan gratuito · cupo y caché", () => {
       nickname: "",
       origin: "Salamanca",
       character: "senorial",
-      remate: "corona",
+      remate: "cruz-forja",
       initials: "JG",
       style: "heraldico",
       blueprint,

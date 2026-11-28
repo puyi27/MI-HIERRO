@@ -1,6 +1,8 @@
 import type { BrandBlueprint, DesignScores, ProfileType } from "@/types/forge";
 
 export type ProductKey = "premium" | "similarity";
+export const ACTIVE_PACKS = ["FREE", "PACK_999", "PACK_1990", "FORJA"] as const;
+export type ActivePack = (typeof ACTIVE_PACKS)[number];
 export type OrderStatusKey = "pending" | "paid" | "failed" | "refunded";
 export type LeadTypeKey = "revision" | "forja";
 export type ReportStatusKey = "pending" | "in_progress" | "delivered";
@@ -24,6 +26,7 @@ export interface DesignRecord {
   previewKey: string | null;
   scores: DesignScores;
   lore: string;
+  userId?: string | null;
   createdAt: string;
 }
 
@@ -44,6 +47,39 @@ export interface CreateDesignInput {
   lore: string;
   rasterPng?: string | null;
   generationKey?: string | null;
+  userId?: string | null;
+}
+
+export interface ForgeUserRecord {
+  id: string;
+  sessionToken: string;
+  email: string | null;
+  name: string | null;
+  activePack: ActivePack;
+  creditsLimit: number;
+  creditsUsed: number;
+  unlimited: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateForgeUserInput {
+  sessionToken: string;
+  email?: string | null;
+  name?: string | null;
+  activePack?: ActivePack;
+  creditsLimit?: number;
+  creditsUsed?: number;
+  unlimited?: boolean;
+}
+
+export interface UpdateForgeUserInput {
+  email?: string | null;
+  name?: string | null;
+  activePack?: ActivePack;
+  creditsLimit?: number;
+  creditsUsed?: number;
+  unlimited?: boolean;
 }
 
 export interface OrderRecord {
@@ -131,4 +167,11 @@ export interface ForgeStore {
   listLeads(limit?: number): Promise<LeadRecord[]>;
   listSimilarityRequests(limit?: number): Promise<SimilarityRequestRecord[]>;
   updateSimilarityStatus(id: string, status: ReportStatusKey): Promise<SimilarityRequestRecord | null>;
+  createForgeUser(input: CreateForgeUserInput): Promise<ForgeUserRecord>;
+  getForgeUser(id: string): Promise<ForgeUserRecord | null>;
+  getForgeUserByToken(sessionToken: string): Promise<ForgeUserRecord | null>;
+  updateForgeUser(id: string, patch: UpdateForgeUserInput): Promise<ForgeUserRecord | null>;
+  consumeForgeCredit(id: string): Promise<ForgeUserRecord | null>;
+  listForgeUsers(limit?: number): Promise<ForgeUserRecord[]>;
+  listDesignsForUser(userId: string, limit?: number): Promise<DesignRecord[]>;
 }

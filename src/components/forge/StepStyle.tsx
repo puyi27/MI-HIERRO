@@ -4,10 +4,20 @@ import { useEffect, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { animate, createScope, stagger } from "animejs";
 import { AlertCircle, ArrowRight, Hammer, History, Loader2, Lock } from "lucide-react";
-import { STYLE_META, STYLE_TYPES, type ForgeProposal, type ForgeStyle } from "@/types/forge";
+import {
+  REMATE_META,
+  REMATE_OPTIONS_BY_STYLE,
+  STYLE_META,
+  STYLE_TYPES,
+  type ForgeProposal,
+  type ForgeStyle,
+  type RemateType,
+} from "@/types/forge";
+import { Chip } from "@/components/ui/Chip";
 import { StyleGlyph } from "@/components/forge/StyleGlyph";
 import { ProposalCard } from "@/components/forge/ProposalCard";
 import { DIVISA_OPTIONS } from "@/components/forge/types";
+import type { ForgeSessionInfo } from "@/components/forge/useForgeWizard";
 import { useMediaQuery } from "@/components/ui/useMediaQuery";
 import { prefersReducedMotion } from "@/lib/motion";
 
@@ -19,6 +29,7 @@ interface StepStyleProps {
   error: string | null;
   rateLimited?: boolean;
   remainingToday?: number | null;
+  session?: ForgeSessionInfo | null;
   hasSavedProposals?: boolean;
   onRestoreSaved?: () => void;
   onGoToDelivery?: () => void;
@@ -27,7 +38,18 @@ interface StepStyleProps {
   onSelectProposal: (proposalId: string) => void;
   initialsLabel: string;
   divisaId: string;
+  notes: string;
+  onNotesChange: (notes: string) => void;
+  remate: RemateType;
+  onRemateChange: (remate: RemateType) => void;
 }
+
+const PACK_LABEL: Record<ForgeSessionInfo["activePack"], string> = {
+  FREE: "Plan 0 €",
+  PACK_999: "Pack 9,99 €",
+  PACK_1990: "Pack 19,90 €",
+  FORJA: "Forja Física",
+};
 
 export function StepStyle({
   style,
@@ -37,6 +59,7 @@ export function StepStyle({
   error,
   rateLimited = false,
   remainingToday = null,
+  session = null,
   hasSavedProposals = false,
   onRestoreSaved,
   onGoToDelivery,
@@ -45,6 +68,10 @@ export function StepStyle({
   onSelectProposal,
   initialsLabel,
   divisaId,
+  notes,
+  onNotesChange,
+  remate,
+  onRemateChange,
 }: StepStyleProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useMediaQuery("(max-width: 767px)");
@@ -173,6 +200,50 @@ export function StepStyle({
             })}
           </div>
 
+          <details className="mt-6 border border-forge-border bg-forge-white">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-forge-ink">
+              <span>¿Tienes algún remate en mente?</span>
+              <span className="text-[0.58rem] font-normal tracking-[0.12em] text-forge-graphite">
+                {remate === "auto" ? "Opcional" : REMATE_META[remate]}
+              </span>
+            </summary>
+            <div className="border-t border-forge-border px-4 py-4">
+              <div className="flex flex-wrap gap-2">
+                {REMATE_OPTIONS_BY_STYLE[style].map((option) => (
+                  <Chip
+                    key={option}
+                    label={REMATE_META[option]}
+                    selected={remate === option}
+                    onSelect={() => onRemateChange(option)}
+                  />
+                ))}
+              </div>
+              <p className="mt-3 text-xs leading-relaxed text-forge-graphite">
+                {remate === "auto"
+                  ? "El maestro elegirá el remate más noble para esta familia y tus iniciales."
+                  : `Remate ${REMATE_META[remate].toLowerCase()} soldado a la pieza, nunca superpuesto.`}
+              </p>
+            </div>
+          </details>
+
+          <div className="mt-5">
+            <label htmlFor="forge-notes" className="eyebrow-muted">
+              Notas para el maestro
+            </label>
+            <textarea
+              id="forge-notes"
+              value={notes}
+              onChange={(event) => onNotesChange(event.target.value.slice(0, 280))}
+              maxLength={280}
+              rows={3}
+              placeholder="Ej.: hierro para la cancela de la finca, remate de cruz y lectura amplia desde la carretera."
+              className="mt-2 w-full resize-none border border-forge-border bg-forge-white px-3 py-2.5 text-xs leading-relaxed text-forge-ink outline-none transition focus:border-forge-leather"
+            />
+            <p className="mt-1 text-right text-[0.58rem] uppercase tracking-[0.14em] text-forge-graphite">
+              {notes.length}/280 · opcional
+            </p>
+          </div>
+
           <div className="mt-6">
             <button type="button" onClick={onGenerate} disabled={generating || initialsLabel.length < 1} className="btn-primary w-full">
               {generating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Hammer className="h-4 w-4" aria-hidden />}
@@ -182,9 +253,16 @@ export function StepStyle({
               {generating
                 ? "Componiendo iniciales, soldando remates y rasterizando láminas con marca de agua."
                 : remainingToday !== null
-                  ? `Te quedan ${remainingToday} láminas gratuitas con IA hoy · vista previa con marca de agua.`
+                  ? `Te quedan ${remainingToday} láminas gratuitas en esta sesión · vista previa con marca de agua.`
                   : "Tres propuestas gratuitas · sin tarjeta · vista previa con marca de agua."}
             </p>
+            {session ? (
+              <p className="mt-1.5 text-[0.6rem] uppercase tracking-[0.14em] text-forge-leather">
+                {session.unlimited
+                  ? "Generación infinita activa · sin tope de láminas"
+                  : `${PACK_LABEL[session.activePack]} · ${session.creditsRemaining ?? 0} créditos restantes · ${session.creditsUsed}/${session.creditsLimit} usados`}
+              </p>
+            ) : null}
           </div>
 
           {error ? (
@@ -193,7 +271,7 @@ export function StepStyle({
                 <p className="eyebrow">Cupo diario de fragua</p>
                 <p className="mt-2 text-xs leading-relaxed text-forge-ink">{error}</p>
                 <p className="mt-2 text-xs leading-relaxed text-forge-graphite">
-                  Las combinaciones ya forjadas reutilizan su caché al instante sin consumir cupo.
+                  Tu cupo queda vinculado a esta sesión: no se reinicia al recargar la página.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {hasSavedProposals && onRestoreSaved ? (

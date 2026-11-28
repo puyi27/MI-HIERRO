@@ -23,17 +23,25 @@ export default async function AdminPage() {
 
   try {
     const store = await getStore();
-    const [orders, leads, reports] = await Promise.all([
+    const [orders, leads, reports, users] = await Promise.all([
       store.listOrders(80),
       store.listLeads(80),
       store.listSimilarityRequests(80),
+      store.listForgeUsers(200),
     ]);
+    const usersWithDesigns = await Promise.all(
+      users.map(async (user) => ({
+        ...user,
+        designs: await store.listDesignsForUser(user.id, 20),
+      })),
+    );
 
     return (
       <AdminDashboard
         orders={orders}
         leads={leads}
         reports={reports}
+        users={usersWithDesigns}
         storeDriver={process.env.DATABASE_URL ? "prisma" : "file"}
         storeError={null}
       />
@@ -44,6 +52,7 @@ export default async function AdminPage() {
         orders={[]}
         leads={[]}
         reports={[]}
+        users={[]}
         storeDriver={process.env.DATABASE_URL ? "prisma" : "file"}
         storeError="almacén no disponible"
       />

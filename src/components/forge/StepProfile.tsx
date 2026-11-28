@@ -1,6 +1,6 @@
 import { Crown, Home, MapPin, Shield, User } from "lucide-react";
-import { CharacterType, PROFILE_META, PROFILE_TYPES, ProfileType, RemateType, REMATE_META, CHARACTER_META } from "@/types/forge";
-import { CHARACTER_TYPES, REMATE_TYPES } from "@/types/forge";
+import { CharacterType, PROFILE_META, PROFILE_TYPES, ProfileType, CHARACTER_META } from "@/types/forge";
+import { CHARACTER_TYPES } from "@/types/forge";
 import { Field } from "@/components/ui/Field";
 import { Chip } from "@/components/ui/Chip";
 import { LegalNotice } from "@/components/layout/LegalNotice";
@@ -114,34 +114,19 @@ export function StepProfile({ draft, errors, onChange }: StepProfileProps) {
         />
       </div>
 
-      <div className="mt-8 grid gap-8 sm:grid-cols-2">
-        <fieldset>
-          <legend className="eyebrow-muted">Carácter del trazo</legend>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {CHARACTER_TYPES.map((character: CharacterType) => (
-              <Chip
-                key={character}
-                label={CHARACTER_META[character]}
-                selected={draft.character === character}
-                onSelect={() => onChange({ character })}
-              />
-            ))}
-          </div>
-        </fieldset>
-        <fieldset>
-          <legend className="eyebrow-muted">Remate superior</legend>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {REMATE_TYPES.map((remate: RemateType) => (
-              <Chip
-                key={remate}
-                label={REMATE_META[remate]}
-                selected={draft.remate === remate}
-                onSelect={() => onChange({ remate })}
-              />
-            ))}
-          </div>
-        </fieldset>
-      </div>
+      <fieldset className="mt-8">
+        <legend className="eyebrow-muted">Carácter del trazo</legend>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {CHARACTER_TYPES.map((character: CharacterType) => (
+            <Chip
+              key={character}
+              label={CHARACTER_META[character]}
+              selected={draft.character === character}
+              onSelect={() => onChange({ character })}
+            />
+          ))}
+        </div>
+      </fieldset>
 
       <div className="mt-8 flex items-start gap-3 border border-forge-border bg-forge-stone p-4 text-xs leading-relaxed text-forge-graphite">
         <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-forge-leather" aria-hidden />

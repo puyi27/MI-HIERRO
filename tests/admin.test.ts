@@ -80,7 +80,7 @@ beforeAll(async () => {
     nickname: "El Sella",
     origin: "Sevilla",
     character: "sobrio",
-    remate: "cruz",
+    remate: "cruz-forja",
     initials: "JGM",
     style: "tradicional",
     blueprint,

@@ -4,7 +4,22 @@ export const PROFILE_TYPES = ["novillero", "ganaderia", "particular"] as const;
 export const STYLE_TYPES = ["tradicional", "monograma", "geometrico", "heraldico"] as const;
 export const USE_CASES = ["fuego", "nitrogeno", "bordado_oro", "piel"] as const;
 export const CHARACTER_TYPES = ["sobrio", "senorial", "agresivo", "minimalista"] as const;
-export const REMATE_TYPES = ["cruz", "corona", "arco", "sin-remate"] as const;
+export const REMATE_TYPES = [
+  "auto",
+  "sin-remate",
+  "asa-caldera",
+  "arco-ganadero",
+  "cruz-forja",
+  "asta-compartida",
+  "inicial-abrazada",
+  "enlazado-vertical",
+  "anillo-cortado",
+  "ovalo",
+  "barras-puras",
+  "escudo-espanol",
+  "escudo-apuntado",
+  "barra-almenada",
+] as const;
 export const PREVIEW_TEXTURES = [
   "hierro",
   "bordado",
@@ -129,11 +144,32 @@ export const CHARACTER_META: Record<CharacterType, string> = {
 };
 
 export const REMATE_META: Record<RemateType, string> = {
-  cruz: "Cruz",
-  corona: "Corona",
-  arco: "Arco",
+  auto: "A criterio del maestro",
   "sin-remate": "Sin remate",
+  "asa-caldera": "Asa de caldera",
+  "arco-ganadero": "Arco ganadero",
+  "cruz-forja": "Cruz de forja",
+  "asta-compartida": "Asta compartida",
+  "inicial-abrazada": "Inicial abrazada",
+  "enlazado-vertical": "Enlazado vertical",
+  "anillo-cortado": "Anillo cortado",
+  ovalo: "Óvalo",
+  "barras-puras": "Barras puras",
+  "escudo-espanol": "Escudo español",
+  "escudo-apuntado": "Escudo apuntado",
+  "barra-almenada": "Barra almenada",
 };
+
+export const REMATE_OPTIONS_BY_STYLE: Record<ForgeStyle, readonly RemateType[]> = {
+  tradicional: ["auto", "asa-caldera", "arco-ganadero", "cruz-forja", "sin-remate"],
+  monograma: ["auto", "asta-compartida", "inicial-abrazada", "enlazado-vertical"],
+  geometrico: ["auto", "anillo-cortado", "ovalo", "barras-puras"],
+  heraldico: ["auto", "escudo-espanol", "escudo-apuntado", "barra-almenada"],
+};
+
+export function remateForStyle(style: ForgeStyle, remate: RemateType): RemateType {
+  return REMATE_OPTIONS_BY_STYLE[style]?.includes(remate) ? remate : "auto";
+}
 
 const NAME_REGEX = /^[\p{L}][\p{L}\p{M}'\u2019\-.\s]{1,39}$/u;
 const NICKNAME_REGEX = /^[\p{L}][\p{L}\p{M}'\u2019\-.\s]{0,29}$/u;

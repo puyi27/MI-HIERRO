@@ -55,6 +55,7 @@ export interface WizardDraft {
   remate: RemateType;
   combinationId: string | null;
   style: ForgeStyle;
+  notes: string;
   divisaId: string;
   proposals: ForgeProposal[];
   selectedProposalId: string | null;
@@ -71,9 +72,10 @@ export function createDraft(profile: ProfileType): WizardDraft {
     nickname: "",
     origin: "",
     character: "sobrio",
-    remate: "sin-remate",
     combinationId: null,
     style: "tradicional",
+    remate: "auto",
+    notes: "",
     divisaId: DIVISA_OPTIONS[0].id,
     proposals: [],
     selectedProposalId: null,
